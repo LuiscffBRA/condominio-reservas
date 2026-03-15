@@ -1,106 +1,83 @@
-{% extends 'base.html' %}
+{% load static %}
 
-{% block content %}
+<!DOCTYPE html>
+<html lang="pt-br">
 
-<div class="text-center mb-5">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="{% static 'css/estiloMorador.css' %}" rel="stylesheet">
 
-<h2>Olá, Carla</h2>
-<p class="text-muted">O que vamos reservar hoje?</p>
+    <title>Condomínio Estrela</title>
 
+</head>
+
+<body>
+<div class="container">
+    <div class="main-box">
+        <div class="header-title">
+            <h5 class="text-muted">Sistema do Condomínio</h5>
+            <h1>CONDOMÍNIO ESTRELA</h1>
+            <a href="{% url 'login' %}" class="btn btn-sm btn-danger mt-2">Sair</a>
+        </div>
+
+        <div class="text-center mb-5">
+            <h2>Olá, Carla</h2>
+            <p class="text-muted">O que vamos reservar hoje?</p>
+        </div>
+
+        <div class="row g-4 mb-5">
+            <div class="col-md-6">
+                <div class="card shadow-sm card-area">
+                    <div class="card-body">
+                        <h5 class="card-title">Churrasqueira Gourmet</h5>
+                        <p class="text-muted">Disponível para até 20 pessoas</p>
+                        <button class="btn btn-primary w-100">Solicitar Reserva</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-6">
+                <div class="card shadow-sm card-area">
+                    <div class="card-body">
+                        <h5 class="card-title">Salão de Festas</h5>
+                        <p class="text-muted">Espaço amplo com ar-condicionado</p>
+                        <button class="btn btn-primary w-100">Solicitar Reserva</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card shadow-sm">
+            <div class="card-header">
+                <strong>Minhas Solicitações</strong>
+            </div>
+            <div class="card-body p-0">
+                <table class="table table-hover mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Área</th>
+                            <th>Data</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Churrasqueira</td>
+                            <td>20/03/2026</td>
+                            <td><span class="badge bg-success">Aprovada</span></td>
+                        </tr>
+                        <tr>
+                            <td>Piscina (Raia 1)</td>
+                            <td>15/03/2026</td>
+                            <td><span class="badge bg-warning text-dark">Pendente</span></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        </div>
 </div>
-
-
-<div class="row g-4 mb-5">
-
-<div class="col-md-6">
-
-<div class="card shadow-sm card-area">
-
-<div class="card-body">
-
-<h5 class="card-title">Churrasqueira Gourmet</h5>
-
-<p class="text-muted">
-Disponível para até 20 pessoas
-</p>
-
-<button class="btn btn-primary w-100">
-Solicitar Reserva
-</button>
-
-</div>
-
-</div>
-
-</div>
-
-
-<div class="col-md-6">
-
-<div class="card shadow-sm card-area">
-
-<div class="card-body">
-
-<h5 class="card-title">Salão de Festas</h5>
-
-<p class="text-muted">
-Espaço amplo com ar-condicionado
-</p>
-
-<button class="btn btn-primary w-100">
-Solicitar Reserva
-</button>
-
-</div>
-
-</div>
-
-</div>
-
-</div>
-
-
-
-<div class="card shadow-sm">
-
-<div class="card-header">
-<strong>Minhas Solicitações</strong>
-</div>
-
-<div class="card-body p-0">
-
-<table class="table table-hover mb-0">
-
-<thead class="table-light">
-
-<tr>
-<th>Área</th>
-<th>Data</th>
-<th>Status</th>
-</tr>
-
-</thead>
-
-<tbody>
-
-<tr>
-<td>Churrasqueira</td>
-<td>20/03/2026</td>
-<td><span class="badge bg-success">Aprovada</span></td>
-</tr>
-
-<tr>
-<td>Piscina (Raia 1)</td>
-<td>15/03/2026</td>
-<td><span class="badge bg-warning text-dark">Pendente</span></td>
-</tr>
-
-</tbody>
-
-</table>
-
-</div>
-
-</div>
-
-{% endblock %}
+</body>
+</html>
