@@ -1,0 +1,69 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col">
+        <h2>Painel Administrativo</h2>
+        <p class="text-muted">Gestão de moradores e ocupação das áreas.</p>
+    </div>
+</div>
+
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="card bg-primary text-white shadow-sm">
+            <div class="card-body text-center">
+                <h3 class="card-title">15</h3>
+                <p class="card-text">Novos Moradores</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-warning text-dark shadow-sm">
+            <div class="card-body text-center">
+                <h3 class="card-title">8</h3>
+                <p class="card-text">Reservas Pendentes</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6 text-end">
+        <button class="btn btn-danger mb-2">Bloquear Área para Manutenção</button>
+        <button class="btn btn-secondary mb-2">Editar Horários Gerais</button>
+    </div>
+</div>
+
+<div class="card shadow-sm">
+    <div class="card-header bg-white"><strong>Controle de Acesso de Moradores</strong></div>
+    <div class="card-body p-0">
+        <table class="table table-hover mb-0">
+            <thead class="table-light">
+                <tr>
+                    <th>Nome</th>
+                    <th>Apto/Bloco</th>
+                    <th>Status de Acesso</th>
+                    <th>Ações</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>carla Fernandes</td>
+                    <td>102 / Bloco A</td>
+                    <td><span class="badge bg-success">Ativo</span></td>
+                    <td><button class="btn btn-sm btn-outline-danger">Desativar</button></td>
+                </tr>
+                <tr>
+                    <td>João Gomes</td>
+                    <td>305 / Bloco C</td>
+                    <td><span class="badge bg-success">Ativo</span></td>
+                    <td><button class="btn btn-sm btn-outline-danger">Desativar</button></td>
+                </tr>
+                <tr>
+                    <td>Visitante Teste</td>
+                    <td>- / -</td>
+                    <td><span class="badge bg-secondary">Pendente</span></td>
+                    <td><button class="btn btn-sm btn-outline-success">Ativar</button></td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

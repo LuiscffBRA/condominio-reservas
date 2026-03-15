@@ -1,0 +1,106 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<div class="text-center mb-5">
+
+<h2>Olá, Carla</h2>
+<p class="text-muted">O que vamos reservar hoje?</p>
+
+</div>
+
+
+<div class="row g-4 mb-5">
+
+<div class="col-md-6">
+
+<div class="card shadow-sm card-area">
+
+<div class="card-body">
+
+<h5 class="card-title">Churrasqueira Gourmet</h5>
+
+<p class="text-muted">
+Disponível para até 20 pessoas
+</p>
+
+<button class="btn btn-primary w-100">
+Solicitar Reserva
+</button>
+
+</div>
+
+</div>
+
+</div>
+
+
+<div class="col-md-6">
+
+<div class="card shadow-sm card-area">
+
+<div class="card-body">
+
+<h5 class="card-title">Salão de Festas</h5>
+
+<p class="text-muted">
+Espaço amplo com ar-condicionado
+</p>
+
+<button class="btn btn-primary w-100">
+Solicitar Reserva
+</button>
+
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+
+
+<div class="card shadow-sm">
+
+<div class="card-header">
+<strong>Minhas Solicitações</strong>
+</div>
+
+<div class="card-body p-0">
+
+<table class="table table-hover mb-0">
+
+<thead class="table-light">
+
+<tr>
+<th>Área</th>
+<th>Data</th>
+<th>Status</th>
+</tr>
+
+</thead>
+
+<tbody>
+
+<tr>
+<td>Churrasqueira</td>
+<td>20/03/2026</td>
+<td><span class="badge bg-success">Aprovada</span></td>
+</tr>
+
+<tr>
+<td>Piscina (Raia 1)</td>
+<td>15/03/2026</td>
+<td><span class="badge bg-warning text-dark">Pendente</span></td>
+</tr>
+
+</tbody>
+
+</table>
+
+</div>
+
+</div>
+
+{% endblock %}
