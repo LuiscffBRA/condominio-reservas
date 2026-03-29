@@ -1,51 +1,113 @@
 {% load static %}
-
 <!DOCTYPE html>
 <html lang="pt-br">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" 
     integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
     <link href="{% static 'css/estilo.css' %}" rel="stylesheet">
-
     <title>Condomínio Estrela</title>
 </head>
 
 <body>
     <div class="container">
+        
         <div class="form-image">
-            <img src="{% static 'img/foto.svg' %}">
+            <img src="{% static 'img/foto.svg' %}" alt="Ilustração Condomínio">
         </div>
+
         <div class="form">
-            <form action="#">
-                <div class="form-header">
-                    <div class="title">
-                        <h3>Bem Vindo!</h3>
-                    </div>
-                    <div class="second-title">
-                        <h1>CONDOMÍNIO ESTRELA</h1>
-                    </div>
+            
+            {% if messages %}
+                <div class="w-100 mb-3">
+                    {% for message in messages %}
+                        <div class="alert alert-{{ message.tags }} text-center py-2" style="font-size: 0.9rem;" role="alert">
+                            {{ message }}
+                        </div>
+                    {% endfor %}
                 </div>
-                <div class="input-group">
-                    <div class="input-box">
-                        <label class="login">LOGIN</label>
-                        <input id="email" type="email" name="email" placeholder="Digite seu e-mail" required>
+            {% endif %}
+
+            {% if request.path == '/cadastro/' %}
+                <form action="{% url 'cadastro' %}" method="POST" class="w-100 d-flex flex-column align-items-center">
+                    {% csrf_token %}
+                    
+                    <div class="form-header w-100 text-center mb-4">
+                        <div class="title">
+                            <h3>Novo Morador</h3>
+                        </div>
+                        <div class="second-title">
+                            <h1>CADASTRE-SE</h1>
+                        </div>
                     </div>
-                    <div class="input-box">
-                        <input id="password" type="password" name="password" placeholder="Digite sua senha" required>
+
+                    <div class="input-group w-100 d-flex flex-column align-items-center">
+                        <div class="input-box w-100 mb-2">
+                            <input type="text" name="first_name" placeholder="Digite seu nome completo" required class="w-100">
+                        </div>
+                        <div class="input-box w-100 mb-2">
+                            <input type="email" name="email" placeholder="Digite seu e-mail" required class="w-100">
+                        </div>
+                        <div class="d-flex w-100 gap-2 mb-2">
+                            <div class="input-box w-50">
+                                <input type="text" name="bloco" placeholder="Bloco (Ex: A)" required class="w-100">
+                            </div>
+                            <div class="input-box w-50">
+                                <input type="text" name="apartamento" placeholder="Apto (Ex: 102)" required class="w-100">
+                            </div>
+                        </div>
+                        <div class="input-box w-100 mb-3">
+                            <input type="password" name="senha" placeholder="Crie uma senha forte" required class="w-100">
+                        </div>
+
+                        <div class="register-button w-100 text-center mt-3">
+                            <button type="submit" class="btn btn-primary rounded-pill px-5" style="background-color: #066E8B; border: none;">CADASTRAR</button>
+                        </div>
+                        <div class="cont mt-4 text-center">
+                            Já tem uma conta? <a href="{% url 'login' %}">Faça login aqui</a>
+                        </div>
                     </div>
-                    <div class="pwd"><a href="#">Esqueceu sua senha?</a></div>
-                    <div class="register-button">
-                        <button type="button"><a href="#" onclick="realizarLogin()">ENTRAR</a></button>
+                </form>
+
+            {% else %}
+                <form action="{% url 'login' %}" method="POST" class="w-100 d-flex flex-column align-items-center">
+                    {% csrf_token %}
+                    
+                    <div class="form-header w-100 text-center mb-4">
+                        <div class="title">
+                            <h3>Bem Vindo!</h3>
+                        </div>
+                        <div class="second-title">
+                            <h1>CONDOMÍNIO ESTRELA</h1>
+                        </div>
                     </div>
-                    <div class="cont">Ainda não tem uma conta?<a href="/TM/Cadastro/index.html"> Cadastre-se aqui</a></div>
-                </div>
-            </form>
+
+                    <div class="input-group w-100 d-flex flex-column align-items-center">
+                        <div class="input-box w-100 mb-3">
+                            <label class="login w-100 text-start">LOGIN</label>
+                            <input id="email" type="email" name="email" placeholder="Digite seu e-mail" required class="w-100">
+                        </div>
+                        <div class="input-box w-100 mb-2">
+                            <input id="password" type="password" name="senha" placeholder="Digite sua senha" required class="w-100">
+                        </div>
+                        
+                        <div class="pwd w-100 text-end mb-3"><a href="#">Esqueceu sua senha?</a></div>
+                        
+                        <div class="register-button w-100 text-center mt-2">
+                            <button type="submit" class="btn btn-primary rounded-pill px-5" style="background-color: #066E8B; border: none;">ENTRAR</button>
+                        </div>
+                        <div class="cont mt-5 text-center">
+                            Ainda não tem uma conta? <a href="{% url 'cadastro' %}">Cadastre-se aqui</a>
+                        </div>
+                    </div>
+                </form>
+            {% endif %}
+
         </div>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 </body>
-
 </html>

@@ -1,0 +1,69 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <title>Painel - Aprovar Usuários</title>
+    <style>
+        body { background-color: #f4f6f9; font-family: 'Segoe UI', sans-serif; }
+        .navbar-custom { background-color: #1a2a3a; padding: 15px 0; }
+        .navbar-custom .navbar-brand { color: #ffffff; font-weight: 700; }
+        .card-table { border-radius: 12px; border: none; box-shadow: 0 4px 12px rgba(0,0,0,0.04); }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-custom mb-5 shadow-sm">
+        <div class="container">
+            <a class="navbar-brand" href="#">Condomínio Estrela</a>
+            <a href="javascript:history.back()" class="btn btn-outline-light btn-sm ms-auto">Voltar</a>
+        </div>
+    </nav>
+
+    <div class="container" style="max-width: 900px;">
+        <h2 class="fw-bold mb-1 text-dark">Aprovação de Moradores</h2>
+        <p class="text-muted mb-4">Gerencie os cadastros pendentes no sistema.</p>
+
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert alert-{{ message.tags }}">{{ message }}</div>
+            {% endfor %}
+        {% endif %}
+
+        <div class="card card-table p-4">
+            {% if usuarios_pendentes %}
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Nome</th>
+                                <th>E-mail</th>
+                                <th>Bloco/Apto</th>
+                                <th class="text-center">Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for morador in usuarios_pendentes %}
+                            <tr>
+                                <td class="fw-medium">{{ morador.first_name }}</td>
+                                <td>{{ morador.email }}</td>
+                                <td>Bloco {{ morador.bloco }} - Apto {{ morador.apartamento }}</td>
+                                <td class="text-center">
+                                    <a href="{% url 'aprovar_usuario' morador.id %}" class="btn btn-sm btn-success rounded-pill px-3">Aprovar</a>
+                                    <a href="{% url 'negar_usuario' morador.id %}" class="btn btn-sm btn-danger rounded-pill px-3 ms-1">Negar</a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <div class="text-center py-5 text-muted">
+                    <h5>Nenhum cadastro pendente no momento. 🎉</h5>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</body>
+</html>

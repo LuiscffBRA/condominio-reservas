@@ -18,14 +18,16 @@
             <ul class="navbar-nav mx-auto">
                 <li class="nav-item"><a class="nav-link" href="#">Áreas</a></li>
                 <li class="nav-item"><a class="nav-link" href="#">Reservas</a></li>
-                <li class="nav-item"><a class="nav-link" href="#">Moradores</a></li>
+                <li class="nav-item"><a class="nav-link" href="{% url 'listar_usuarios' %}">Moradores</a></li>
             </ul>
             <div class="dropdown ms-auto">
-                <button class="btn btn-perfil rounded-circle dropdown-toggle" type="button" id="perfilMenu" data-bs-toggle="dropdown" aria-expanded="false">CA</button>
+                <button class="btn btn-perfil rounded-circle dropdown-toggle" type="button" id="perfilMenu" data-bs-toggle="dropdown" aria-expanded="false">
+                    {{ user.first_name|make_list|first|upper }}
+                </button>
                 <ul class="dropdown-menu dropdown-menu-end shadow border-0" aria-labelledby="perfilMenu" style="border-radius: 10px;">
-                    <li><a class="dropdown-item py-2" href="perfil.html">Meu Perfil</a></li>
+                    <li><a class="dropdown-item py-2" href="{% url 'perfil' %}">Meu Perfil</a></li>
                     <li><hr class="dropdown-divider m-0"></li>
-                    <li><a class="dropdown-item py-2 text-danger" href="{% url 'login' %}">Sair</a></li>
+                    <li><a class="dropdown-item py-2 text-danger" href="{% url 'logout' %}">Sair</a></li>
                 </ul>
             </div>
         </div>
@@ -33,13 +35,13 @@
 
     <div class="container" style="max-width: 1100px;">
         <div class="mb-5">
-            <h2 class="fw-bold mb-1" style="color: #1e293b;">Painel Administrativo</h2>
+            <h2 class="fw-bold mb-1" style="color: #1e293b;">Olá, {{ user.first_name }}! Painel Administrativo</h2>
             <p class="text-muted">Visão geral do condomínio e gestão rápida.</p>
         </div>
 
         <div class="row g-4 mb-5">
             <div class="col-md-4">
-                <a href="#" class="text-decoration-none">
+                <a href="{% url 'listar_usuarios' %}" class="text-decoration-none">
                     <div class="card card-dash bg-card-blue h-100">
                         <div class="card-body text-center p-4">
                             <h3 class="card-title-number">15</h3>
@@ -64,7 +66,7 @@
                 <a href="#" class="text-decoration-none">
                     <div class="card card-dash bg-card-green h-100">
                         <div class="card-body text-center p-4">
-                            <h3 class="card-title-number">3</h3>
+                            <h3 class="card-title-number">{{ total_moradores }}</h3>
                             <p class="card-text fw-medium fs-5 mb-0">Reservas Hoje</p>
                             <small class="text-white-50 mt-2 d-block">Ver ocupação atual ➔</small>
                         </div>

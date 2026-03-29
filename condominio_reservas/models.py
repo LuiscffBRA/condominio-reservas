@@ -1,7 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser
 
-# A Classe Usuario agora herda do sistema de segurança nativo do Django
 class Usuario(AbstractUser):
     STATUS_CHOICES = [
         ('Pendente', 'Pendente'),
@@ -9,23 +8,20 @@ class Usuario(AbstractUser):
         ('Negado', 'Negado'),
     ]
     
-    # Vamos forçar o e-mail a ser o campo principal, em vez de um "username" qualquer
     email = models.EmailField(unique=True)
     
     statusConta = models.CharField(
         max_length=50,
         choices=STATUS_CHOICES,
-        default='Pendente' # Todo mundo nasce pendente, até o admin aprovar!
+        default='Pendente'
     )
 
-    # Dizemos ao Django que o login será feito pelo EMAIL e não pelo username padrão
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = ['username']
 
     def __str__(self):
         return self.email
 
-# O Morador continua herdando de Usuario, ganhando automaticamente login e senha
 class Morador(Usuario):
     bloco = models.CharField(max_length=10)
     apartamento = models.CharField(max_length=10)

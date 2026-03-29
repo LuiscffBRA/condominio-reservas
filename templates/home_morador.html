@@ -21,11 +21,13 @@
                 </li>
             </ul>
             <div class="dropdown ms-auto">
-                <button class="btn btn-perfil rounded-circle dropdown-toggle" type="button" id="perfilMenu" data-bs-toggle="dropdown" aria-expanded="false">CM</button>
+                <button class="btn btn-perfil rounded-circle dropdown-toggle" type="button" id="perfilMenu" data-bs-toggle="dropdown" aria-expanded="false">
+                    {{ user.first_name|make_list|first|upper }}
+                </button>
                 <ul class="dropdown-menu dropdown-menu-end shadow border-0" aria-labelledby="perfilMenu" style="border-radius: 10px;">
-                    <li><a class="dropdown-item py-2" href="perfil.html">Meu Perfil</a></li>
+                    <li><a class="dropdown-item py-2" href="{% url 'perfil' %}">Meu Perfil</a></li>
                     <li><hr class="dropdown-divider m-0"></li>
-                    <li><a class="dropdown-item py-2 text-danger" href="{% url 'login' %}">Sair</a></li>
+                    <li><a class="dropdown-item py-2 text-danger" href="{% url 'logout' %}">Sair</a></li>
                 </ul>
             </div>
         </div>
@@ -33,7 +35,7 @@
 
     <div class="container" style="max-width: 1000px;"> 
         <div class="mb-4">
-            <h2 class="fw-bold mb-1" style="color: #1e293b;">Olá, Carla</h2>
+            <h2 class="fw-bold mb-1" style="color: #1e293b;">Olá, {{ user.first_name }}</h2>
             <p class="text-muted">O que vamos reservar hoje?</p>
         </div>
 
