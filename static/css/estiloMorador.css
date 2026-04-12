@@ -7,18 +7,27 @@ body {
     background-color: #1a2a3a; 
     padding: 15px 0;
 }
+
 .navbar-custom .navbar-brand {
     color: #ffffff;
     font-weight: 700;
     letter-spacing: 0.5px;
 }
-.navbar-custom .navbar-brand:hover { color: #e2e8f0; }
+
+.navbar-custom .navbar-brand:hover { 
+    color: #e2e8f0; 
+}
 
 .navbar-custom .nav-link {
     color: #94a3b8;
     font-weight: 500;
+    transition: 0.2s;
 }
-.navbar-custom .nav-link:hover, .navbar-custom .nav-link.active { color: #ffffff; }
+
+.navbar-custom .nav-link:hover, 
+.navbar-custom .nav-link.active { 
+    color: #ffffff; 
+}
 
 .btn-perfil {
     background-color: #3b82f6; 
@@ -30,8 +39,13 @@ body {
     display: flex;
     align-items: center;
     justify-content: center;
+    transition: 0.2s;
 }
-.btn-perfil:hover { background-color: #2563eb; color: white; }
+
+.btn-perfil:hover { 
+    background-color: #2563eb; 
+    color: white; 
+}
 
 .card { 
     border-radius: 12px; 
@@ -55,6 +69,7 @@ body {
     border-bottom: 2px solid #e2e8f0;
     padding: 12px 16px;
 }
+
 .table-custom td {
     color: #334155;
     vertical-align: middle;
@@ -66,4 +81,5 @@ body {
     border-radius: 8px;
     font-weight: 500;
     padding: 10px;
+    transition: 0.2s;
 }

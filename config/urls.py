@@ -35,7 +35,9 @@ urlpatterns = [
     path('usuarios/pendentes/', views.listar_usuarios, name='listar_usuarios'),
     path('usuarios/aprovar/<int:id>/', views.aprovar_usuario, name='aprovar_usuario'),
     path('usuarios/negar/<int:id>/', views.negar_usuario, name='negar_usuario'),
+        path('moradores/todos/', views.listar_todos_moradores, name='listar_todos_moradores'),
+    path('meu-perfil/alterar-senha/', views.alterar_senha, name='alterar_senha'),
     
     # Rota do Meu Perfil
-    path('meu-perfil/', views.perfil_view, name='perfil'),
+    path('meu-perfil/', views.perfil_view, name='perfil'),    
 ]

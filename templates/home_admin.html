@@ -18,7 +18,8 @@
             <ul class="navbar-nav mx-auto">
                 <li class="nav-item"><a class="nav-link" href="#">Áreas</a></li>
                 <li class="nav-item"><a class="nav-link" href="#">Reservas</a></li>
-                <li class="nav-item"><a class="nav-link" href="{% url 'listar_usuarios' %}">Moradores</a></li>
+                <li class="nav-item"><a class="nav-link" href="{% url 'listar_todos_moradores' %}">Moradores</a></li>
+                <li class="nav-item"><a class="nav-link text-warning fw-bold" href="{% url 'listar_usuarios' %}">Aprovações</a></li>
             </ul>
             <div class="dropdown ms-auto">
                 <button class="btn btn-perfil rounded-circle dropdown-toggle" type="button" id="perfilMenu" data-bs-toggle="dropdown" aria-expanded="false">
@@ -41,10 +42,10 @@
 
         <div class="row g-4 mb-5">
             <div class="col-md-4">
-                <a href="{% url 'listar_usuarios' %}" class="text-decoration-none">
+                <a href="{% url 'listar_todos_moradores' %}" class="text-decoration-none">
                     <div class="card card-dash bg-card-blue h-100">
                         <div class="card-body text-center p-4">
-                            <h3 class="card-title-number">15</h3>
+                            <h3 class="card-title-number">{{ total_moradores }}</h3>
                             <p class="card-text fw-medium fs-5 mb-0">Moradores</p>
                             <small class="text-white-50 mt-2 d-block">Acessar lista completa ➔</small>
                         </div>
@@ -66,7 +67,7 @@
                 <a href="#" class="text-decoration-none">
                     <div class="card card-dash bg-card-green h-100">
                         <div class="card-body text-center p-4">
-                            <h3 class="card-title-number">{{ total_moradores }}</h3>
+                            <h3 class="card-title-number">3</h3>
                             <p class="card-text fw-medium fs-5 mb-0">Reservas Hoje</p>
                             <small class="text-white-50 mt-2 d-block">Ver ocupação atual ➔</small>
                         </div>

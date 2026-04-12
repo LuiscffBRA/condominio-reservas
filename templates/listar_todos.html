@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-    <title>Painel - Aprovar Usuários</title>
+    <title>Lista de Moradores</title>
     <style>
         body { background-color: #f4f6f9; font-family: 'Segoe UI', sans-serif; }
         .navbar-custom { background-color: #1a2a3a; padding: 15px 0; }
@@ -22,17 +22,11 @@
     </nav>
 
     <div class="container" style="max-width: 900px;">
-        <h2 class="fw-bold mb-1 text-dark">Aprovação de Moradores</h2>
-        <p class="text-muted mb-4">Gerencie os cadastros pendentes no sistema.</p>
-
-        {% if messages %}
-            {% for message in messages %}
-                <div class="alert {% if message.tags == 'error' %}alert-danger fw-bold{% else %}alert-{{ message.tags }}{% endif %}">{{ message }}</div>
-            {% endfor %}
-        {% endif %}
+        <h2 class="fw-bold mb-1 text-dark">Todos os Moradores</h2>
+        <p class="text-muted mb-4">Lista completa de condôminos aprovados no sistema.</p>
 
         <div class="card card-table p-4">
-            {% if usuarios_pendentes %}
+            {% if moradores %}
                 <div class="table-responsive">
                     <table class="table table-hover align-middle">
                         <thead class="table-light">
@@ -40,19 +34,14 @@
                                 <th>Nome</th>
                                 <th>E-mail</th>
                                 <th>Bloco/Apto</th>
-                                <th class="text-center">Ações</th>
                             </tr>
                         </thead>
                         <tbody>
-                            {% for morador in usuarios_pendentes %}
+                            {% for morador in moradores %}
                             <tr>
                                 <td class="fw-medium">{{ morador.first_name }}</td>
                                 <td>{{ morador.email }}</td>
                                 <td>Bloco {{ morador.bloco }} - Apto {{ morador.apartamento }}</td>
-                                <td class="text-center">
-                                    <a href="{% url 'aprovar_usuario' morador.id %}" class="btn btn-sm btn-success rounded-pill px-3">Aprovar</a>
-                                    <a href="{% url 'negar_usuario' morador.id %}" class="btn btn-sm btn-danger rounded-pill px-3 ms-1">Negar</a>
-                                </td>
                             </tr>
                             {% endfor %}
                         </tbody>
@@ -60,7 +49,7 @@
                 </div>
             {% else %}
                 <div class="text-center py-5 text-muted">
-                    <h5>Nenhum cadastro pendente no momento. 🎉</h5>
+                    <h5>Nenhum morador registrado.</h5>
                 </div>
             {% endif %}
         </div>
