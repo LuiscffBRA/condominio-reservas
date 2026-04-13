@@ -17,9 +17,8 @@
             </a>
             <ul class="navbar-nav mx-auto">
                 <li class="nav-item"><a class="nav-link active" href="#">Painel</a></li>
-                <li class="nav-item"><a class="nav-link" href="#">Áreas</a></li>
+                <li class="nav-item"><a class="nav-link" href="{% url 'listar_locais' %}">Áreas</a></li>
                 <li class="nav-item"><a class="nav-link" href="#">Reservas</a></li>
-                <li class="nav-item"><a class="nav-link" href="{% url 'listar_todos_moradores' %}">Moradores</a></li>
                 <li class="nav-item"><a class="nav-link text-warning fw-bold" href="{% url 'listar_usuarios' %}">Aprovações</a></li>
             </ul>
             <div class="dropdown ms-auto">

@@ -5,7 +5,8 @@ from django.contrib.auth.forms import PasswordChangeForm
 from django.contrib.auth import update_session_auth_hash
 from django.contrib import messages
 from .models import Morador
-from .forms import CadastroMoradorForm, EditarPerfilForm, FormularioAlterarSenha
+from .models import Morador, AreaComum
+from .forms import CadastroMoradorForm, EditarPerfilForm, FormularioAlterarSenha, LocalForm
 
 def login_view(request):
     if request.user.is_authenticated:
@@ -99,7 +100,6 @@ def negar_usuario(request, id):
     morador = Morador.objects.get(id=id)
     morador.statusConta = 'Negado'
     morador.save()
-    # Regra Carla: Destaque visual na tela de Aprovação para Cadastro Negado
     messages.error(request, f'CADASTRO NEGADO: O acesso de {morador.first_name} foi recusado.', extra_tags='danger fw-bold')
     return redirect('listar_usuarios')
 
@@ -129,7 +129,16 @@ def listar_todos_moradores(request):
 @login_required(login_url='login')
 def alterar_senha(request):
     if request.method == 'POST':
-        form = FormularioAlterarSenha(request.user, request.POST) # <-- Mudou aqui
+        old_pwd = request.POST.get('old_password')
+        new_pwd = request.POST.get('new_password1')
+        
+        if old_pwd and new_pwd and old_pwd == new_pwd:
+            if request.user.check_password(old_pwd):
+                messages.warning(request, '⚠️ A nova senha não pode ser igual à sua senha atual!')
+                form = FormularioAlterarSenha(request.user, request.POST)
+                return render(request, 'alterar_senha.html', {'form': form})
+
+        form = FormularioAlterarSenha(request.user, request.POST)
         if form.is_valid():
             user = form.save()
             update_session_auth_hash(request, user)
@@ -141,3 +150,45 @@ def alterar_senha(request):
         form = FormularioAlterarSenha(request.user)
     
     return render(request, 'alterar_senha.html', {'form': form})
+
+@login_required(login_url='login')
+def listar_locais(request):
+    locais = AreaComum.objects.all()
+    return render(request, 'listar_locais.html', {'locais': locais})
+
+@login_required(login_url='login')
+def cadastrar_local(request):
+    if request.method == 'POST':
+        form = LocalForm(request.POST)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Área comum cadastrada com sucesso!')
+            return redirect('listar_locais')
+    else:
+        form = LocalForm()
+    return render(request, 'form_local.html', {'form': form, 'titulo': 'Cadastrar Novo Local'})
+
+@login_required(login_url='login')
+def editar_local(request, id):
+    local = AreaComum.objects.get(id=id)
+    if request.method == 'POST':
+        form = LocalForm(request.POST, instance=local)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Área comum atualizada com sucesso!')
+            return redirect('listar_locais')
+    else:
+        form = LocalForm(instance=local)
+    return render(request, 'form_local.html', {'form': form, 'titulo': f'Editar Local: {local.nome}'})
+
+@login_required(login_url='login')
+def deletar_local(request, id):
+    local = AreaComum.objects.get(id=id)
+    local.delete()
+    messages.success(request, 'Área comum excluída com sucesso!')
+    return redirect('listar_locais')
+
+@login_required(login_url='login')
+def visualizar_local(request, id):
+    local = AreaComum.objects.get(id=id)
+    return render(request, 'visualizar_local.html', {'local': local})

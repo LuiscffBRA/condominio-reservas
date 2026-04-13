@@ -1,0 +1,41 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <title>Visualizar Área Comum</title>
+</head>
+<body style="background-color: #f4f6f9;">
+    <nav class="navbar navbar-expand-lg mb-5 shadow-sm" style="background-color: #1a2a3a; padding: 15px 0;">
+        <div class="container">
+            <a class="navbar-brand text-white fw-bold" href="#">Condomínio Estrela</a>
+            <a href="{% url 'listar_locais' %}" class="btn btn-outline-light btn-sm ms-auto">Voltar à Lista</a>
+        </div>
+    </nav>
+
+    <div class="container" style="max-width: 600px;">
+        <div class="card p-5 border-0 shadow-sm text-center" style="border-radius: 12px;">
+            <h2 class="fw-bold text-dark mb-1">{{ local.nome }}</h2>
+            <p class="text-muted mb-4">
+                {% if local.statusLocal == 'Disponivel' %}
+                    <span class="badge bg-success">Status: Disponível</span>
+                {% else %}
+                    <span class="badge bg-warning text-dark">Status: Em Manutenção</span>
+                {% endif %}
+            </p>
+
+            <ul class="list-group list-group-flush text-start">
+                <li class="list-group-item py-3"><strong>Capacidade Máxima:</strong> {{ local.capacidade }} pessoas</li>
+                <li class="list-group-item py-3"><strong>Tempo de Reserva:</strong> Até {{ local.tempoDaReserva }} horas</li>
+                <li class="list-group-item py-3"><strong>Prazo para Cancelar:</strong> {{ local.prazoCancelamentoDias }} dias antes</li>
+            </ul>
+
+            <div class="mt-4">
+                <a href="{% url 'editar_local' local.id %}" class="btn btn-warning rounded-pill px-4 fw-bold">✏️ Editar Local</a>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

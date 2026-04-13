@@ -20,6 +20,9 @@ from condominio_reservas import views
 
 urlpatterns = [
     path('admin/', admin.site.urls), # Painel nativo do Django
+
+    # Rota do Meu Perfil
+    path('meu-perfil/', views.perfil_view, name='perfil'),  
     
     # Rotas de Autenticação
     path('', views.login_view, name='login'),
@@ -35,9 +38,13 @@ urlpatterns = [
     path('usuarios/pendentes/', views.listar_usuarios, name='listar_usuarios'),
     path('usuarios/aprovar/<int:id>/', views.aprovar_usuario, name='aprovar_usuario'),
     path('usuarios/negar/<int:id>/', views.negar_usuario, name='negar_usuario'),
-        path('moradores/todos/', views.listar_todos_moradores, name='listar_todos_moradores'),
+    path('moradores/todos/', views.listar_todos_moradores, name='listar_todos_moradores'),
     path('meu-perfil/alterar-senha/', views.alterar_senha, name='alterar_senha'),
     
-    # Rota do Meu Perfil
-    path('meu-perfil/', views.perfil_view, name='perfil'),    
+    # Rotas do Gerenciar Locais (T6)
+    path('locais/', views.listar_locais, name='listar_locais'),
+    path('locais/cadastrar/', views.cadastrar_local, name='cadastrar_local'),
+    path('locais/editar/<int:id>/', views.editar_local, name='editar_local'),
+    path('locais/deletar/<int:id>/', views.deletar_local, name='deletar_local'),
+    path('locais/visualizar/<int:id>/', views.visualizar_local, name='visualizar_local'),
 ]

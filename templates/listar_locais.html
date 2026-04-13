@@ -1,0 +1,76 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="{% static 'css/estiloAdmin.css' %}" rel="stylesheet">
+    <title>Gerenciar Áreas Comuns</title>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-custom mb-5 shadow-sm">
+        <div class="container">
+            <a class="navbar-brand" href="#">Condomínio Estrela</a>
+            <a href="{% url 'login' %}" class="btn btn-outline-light btn-sm ms-auto">Voltar ao Painel</a>
+        </div>
+    </nav>
+
+    <div class="container" style="max-width: 1000px;">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <h2 class="fw-bold mb-1 text-dark">Áreas Comuns</h2>
+                <p class="text-muted">Gerencie os locais disponíveis para reserva.</p>
+            </div>
+            <a href="{% url 'cadastrar_local' %}" class="btn btn-primary fw-bold" style="background-color: #066E8B; border: none;">+ Novo Local</a>
+        </div>
+
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert alert-{{ message.tags }} fw-bold">{{ message }}</div>
+            {% endfor %}
+        {% endif %}
+
+        <div class="card p-4 border-0 shadow-sm" style="border-radius: 12px;">
+            {% if locais %}
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Nome</th>
+                                <th>Capacidade</th>
+                                <th>Status</th>
+                                <th class="text-center">Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for local in locais %}
+                            <tr>
+                                <td class="fw-medium">{{ local.nome }}</td>
+                                <td>{{ local.capacidade }} Pessoas</td>
+                                <td>
+                                    {% if local.statusLocal == 'Disponivel' %}
+                                        <span class="badge bg-success">Disponível</span>
+                                    {% else %}
+                                        <span class="badge bg-warning text-dark">Manutenção</span>
+                                    {% endif %}
+                                </td>
+                                <td class="text-center">
+                                    <a href="{% url 'visualizar_local' local.id %}" class="btn btn-sm btn-info text-white rounded-pill px-3">Ver</a>
+                                    <a href="{% url 'editar_local' local.id %}" class="btn btn-sm btn-warning text-dark rounded-pill px-3">Editar</a>
+                                    <a href="{% url 'deletar_local' local.id %}" class="btn btn-sm btn-danger rounded-pill px-3" onclick="return confirm('Tem certeza que deseja apagar?');">Excluir</a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <div class="text-center py-5 text-muted">
+                    <h5>Nenhuma área comum cadastrada.</h5>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</body>
+</html>

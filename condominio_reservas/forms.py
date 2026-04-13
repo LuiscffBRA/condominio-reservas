@@ -1,5 +1,5 @@
 from django import forms
-from .models import Morador
+from .models import Morador, AreaComum
 from django.contrib.auth.forms import PasswordChangeForm
 
 class CadastroMoradorForm(forms.ModelForm):
@@ -28,7 +28,6 @@ class CadastroMoradorForm(forms.ModelForm):
         user.set_password(self.cleaned_data['senha'])
         user.statusConta = 'Pendente' 
         
-        # AQUI ESTÁ A MÁGICA: O username obrigatoriamente recebe o e-mail
         user.username = self.cleaned_data['email']
         
         if commit:
@@ -55,8 +54,25 @@ class FormularioAlterarSenha(PasswordChangeForm):
         super().__init__(*args, **kwargs)
         for field in self.fields.values():
             field.widget.attrs['class'] = 'form-control mb-2'
+            field.widget.render_value = True
         
-        # Força os nomes em português
         self.fields['old_password'].label = 'Senha Atual'
         self.fields['new_password1'].label = 'Nova Senha'
         self.fields['new_password2'].label = 'Confirme a Nova Senha'
+        
+class LocalForm(forms.ModelForm):
+    class Meta:
+        model = AreaComum
+        fields = ['nome', 'capacidade', 'prazoCancelamentoDias', 'tempoDaReserva', 'statusLocal']
+        labels = {
+            'nome': 'Nome do Local (Ex: Salão de Festas)',
+            'capacidade': 'Capacidade Máxima (Pessoas)',
+            'prazoCancelamentoDias': 'Prazo para Cancelamento (Dias)',
+            'tempoDaReserva': 'Tempo máximo da reserva (Horas)',
+            'statusLocal': 'Status Atual',
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        for field in self.fields.values():
+            field.widget.attrs['class'] = 'form-control mb-3'
