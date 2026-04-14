@@ -58,8 +58,9 @@ def cadastro_view(request):
             return redirect('login')
         else:
             # Se a senha for fraca ou não coincidir, o form avisa
-            for error in list(form.errors.values()):
-                messages.error(request, error)
+            for lista_de_erros in form.errors.values():
+                for erro_texto_puro in lista_de_erros:
+                    messages.error(request, erro_texto_puro)
     else:
         form = CadastroMoradorForm()
     return render(request, 'login.html', {'form': form})
