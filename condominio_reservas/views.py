@@ -124,8 +124,25 @@ def perfil_view(request):
 
 @login_required(login_url='login')
 def listar_todos_moradores(request):
-    moradores = Morador.objects.filter(statusConta='Aprovado').exclude(is_superuser=True)
+    #Agora pode buscar mais de um status ao mesmo tempo
+    moradores = Morador.objects.filter(statusConta__in=['Aprovado', 'Desabilitado']).exclude(is_superuser=True)
     return render(request, 'listar_todos.html', {'moradores': moradores})
+
+@login_required(login_url='login')
+def alternar_status_morador(request, id):
+    # Busca o morador exato pelo ID
+    morador = Morador.objects.get(id=id)
+    
+    # Alterna o status
+    if morador.statusConta == 'Aprovado':
+        morador.statusConta = 'Desabilitado'
+        messages.warning(request, f"O acesso de {morador.first_name or morador.email} foi desabilitado.")
+    elif morador.statusConta == 'Desabilitado':
+        morador.statusConta = 'Aprovado'
+        messages.success(request, f"O acesso de {morador.first_name or morador.email} foi habilitado novamente.")
+        
+    morador.save()
+    return redirect('listar_todos_moradores') # Redireciona para a função que lista todos os moradores.
 
 @login_required(login_url='login')
 def alterar_senha(request):

@@ -47,4 +47,7 @@ urlpatterns = [
     path('locais/editar/<int:id>/', views.editar_local, name='editar_local'),
     path('locais/deletar/<int:id>/', views.deletar_local, name='deletar_local'),
     path('locais/visualizar/<int:id>/', views.visualizar_local, name='visualizar_local'),
+    
+    #Rota de desabilitar e abilitar morador (resolução da T5)
+    path('alternar_status_morador/<int:id>/', views.alternar_status_morador, name='alternar_status_morador'),
 ]

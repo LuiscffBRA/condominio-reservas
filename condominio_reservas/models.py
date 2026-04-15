@@ -6,6 +6,7 @@ class Usuario(AbstractUser):
         ('Pendente', 'Pendente'),
         ('Aprovado', 'Aprovado'),
         ('Negado', 'Negado'),
+        ('Desabilitado', 'Desabilitado'),
     ]
     
     email = models.EmailField(unique=True)
