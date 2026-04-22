@@ -125,7 +125,7 @@ def perfil_view(request):
 @login_required(login_url='login')
 def listar_todos_moradores(request):
     #Agora pode buscar mais de um status ao mesmo tempo
-    moradores = Morador.objects.filter(statusConta__in=['Aprovado', 'Desabilitado']).exclude(is_superuser=True)
+    moradores = Morador.objects.filter(statusConta__in=['Aprovado', 'Desabilitado']).exclude(is_superuser=True).order_by('first_name')
     return render(request, 'listar_todos.html', {'moradores': moradores})
 
 @login_required(login_url='login')
@@ -171,7 +171,7 @@ def alterar_senha(request):
 
 @login_required(login_url='login')
 def listar_locais(request):
-    locais = AreaComum.objects.all()
+    locais = AreaComum.objects.all().order_by('nome')
     return render(request, 'listar_locais.html', {'locais': locais})
 
 @login_required(login_url='login')
