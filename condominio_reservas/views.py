@@ -4,9 +4,8 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import PasswordChangeForm
 from django.contrib.auth import update_session_auth_hash
 from django.contrib import messages
-from .models import Morador
-from .models import Morador, AreaComum
-from .forms import CadastroMoradorForm, EditarPerfilForm, FormularioAlterarSenha, LocalForm
+from .models import Morador, AreaComum, Reserva
+from .forms import CadastroMoradorForm, EditarPerfilForm, FormularioAlterarSenha, LocalForm, ReservaForm
 
 def login_view(request):
     if request.user.is_authenticated:
@@ -35,6 +34,10 @@ def login_view(request):
             elif user.statusConta == 'Negado':
                 messages.error(request, 'SEU CADASTRO FOI NEGADO. Procure a administração.', extra_tags='danger fw-bold')
                 return redirect('login')
+                
+            elif user.statusConta == 'Desabilitado':
+                messages.error(request, 'SUA CONTA FOI DESABILITADA.', extra_tags='danger fw-bold')
+                return redirect('login')
             
             else:
                 login(request, user)
@@ -57,7 +60,6 @@ def cadastro_view(request):
             messages.success(request, 'Cadastro realizado com sucesso! Aguarde a aprovação.')
             return redirect('login')
         else:
-            # Se a senha for fraca ou não coincidir, o form avisa
             for lista_de_erros in form.errors.values():
                 for erro_texto_puro in lista_de_erros:
                     messages.error(request, erro_texto_puro)
@@ -68,10 +70,6 @@ def cadastro_view(request):
 def logout_view(request):
     logout(request)
     return redirect('login')
-
-@login_required(login_url='login')
-def home_morador(request):
-    return render(request, 'home_morador.html')
 
 @login_required(login_url='login')
 def home_admin(request):
@@ -124,25 +122,23 @@ def perfil_view(request):
 
 @login_required(login_url='login')
 def listar_todos_moradores(request):
-    #Agora pode buscar mais de um status ao mesmo tempo
     moradores = Morador.objects.filter(statusConta__in=['Aprovado', 'Desabilitado']).exclude(is_superuser=True).order_by('first_name')
     return render(request, 'listar_todos.html', {'moradores': moradores})
 
 @login_required(login_url='login')
 def alternar_status_morador(request, id):
-    # Busca o morador exato pelo ID
     morador = Morador.objects.get(id=id)
     
-    # Alterna o status
     if morador.statusConta == 'Aprovado':
         morador.statusConta = 'Desabilitado'
-        messages.warning(request, f"O acesso de {morador.first_name or morador.email} foi desabilitado.")
+        # Mensagem vermelha para ação negativa
+        messages.error(request, f"O acesso de {morador.first_name or morador.email} foi desabilitado.", extra_tags='danger fw-bold')
     elif morador.statusConta == 'Desabilitado':
         morador.statusConta = 'Aprovado'
         messages.success(request, f"O acesso de {morador.first_name or morador.email} foi habilitado novamente.")
         
     morador.save()
-    return redirect('listar_todos_moradores') # Redireciona para a função que lista todos os moradores.
+    return redirect('listar_todos_moradores')
 
 @login_required(login_url='login')
 def alterar_senha(request):
@@ -203,7 +199,6 @@ def editar_local(request, id):
 def deletar_local(request, id):
     local = AreaComum.objects.get(id=id)
     local.delete()
-    # A mudança e o objetivo de manter a notificação com tom avermelhado, está aqui.
     messages.error(request, 'Area comum excluida com sucesso')
     
     return redirect('listar_locais')
@@ -212,3 +207,46 @@ def deletar_local(request, id):
 def visualizar_local(request, id):
     local = AreaComum.objects.get(id=id)
     return render(request, 'visualizar_local.html', {'local': local})
+
+@login_required(login_url='login')
+def home_morador(request):
+    try:
+        morador_logado = request.user.morador
+    except:
+        morador_logado = None
+
+    minhas_reservas = Reserva.objects.filter(morador=morador_logado).order_by('-dataReserva') if morador_logado else []
+    
+    areas_disponiveis = AreaComum.objects.filter(statusLocal='Disponivel').order_by('nome')
+
+    return render(request, 'home_morador.html', {
+        'minhas_reservas': minhas_reservas,
+        'areas_disponiveis': areas_disponiveis
+    })
+
+
+@login_required(login_url='login')
+def solicitar_reserva(request, area_id):
+    area = AreaComum.objects.get(id=area_id)
+    
+    try:
+        morador_logado = request.user.morador
+    except:
+        messages.error(request, "Apenas moradores podem solicitar reservas.", extra_tags='danger fw-bold')
+        return redirect('login')
+
+    if request.method == 'POST':
+        form = ReservaForm(request.POST)
+        if form.is_valid():
+            reserva = form.save(commit=False)
+            reserva.morador = morador_logado
+            reserva.areaComum = area
+            reserva.status = 'Pendente'
+            reserva.save()
+            
+            messages.success(request, f'Reserva para {area.nome} solicitada com sucesso! Aguarde a aprovação.')
+            return redirect('home_morador')
+    else:
+        form = ReservaForm()
+
+    return render(request, 'solicitar_reserva.html', {'form': form, 'area': area})

@@ -5,25 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-    <title>{{ titulo }}</title>
-    
-    <style>
-        /* O ERRO AGORA É UM BLOCO VERMELHÃO COM FUNDO! */
-        ul.errorlist { 
-            list-style-type: none; 
-            padding: 1rem; 
-            background-color: #f8d7da; /* Fundo vermelho claro */
-            color: #842029; /* Texto vermelho escuro */
-            border: 1px solid #f5c2c7; /* Bordinha vermelha */
-            border-radius: 0.375rem; 
-            font-weight: bold; 
-            margin-bottom: 1.5rem; 
-            font-size: 0.95rem;
-        }
-        ul.errorlist li::before { 
-            content: "⚠️ "; 
-        }
-    </style>
+    <title>Solicitar Reserva - {{ area.nome }}</title>
 </head>
 <body style="background-color: #f4f6f9;">
     
@@ -38,14 +20,7 @@
             </button>
             <div class="collapse navbar-collapse" id="navbarPrincipal">
                 <ul class="navbar-nav mx-auto">
-                    {% if user.is_superuser or user.sindico or user.administrador %}
-                        <li class="nav-item"><a class="nav-link text-light px-3" href="{% url 'login' %}">Painel</a></li>
-                        <li class="nav-item"><a class="nav-link text-light px-3" href="{% url 'listar_locais' %}">Áreas</a></li>
-                        <li class="nav-item"><a class="nav-link text-light px-3" href="#">Reservas</a></li>
-                        <li class="nav-item"><a class="nav-link text-warning fw-bold px-3" href="{% url 'listar_usuarios' %}">Aprovações</a></li>
-                    {% else %}
-                        <li class="nav-item"><a class="nav-link text-light px-3" href="{% url 'login' %}">Painel de Reservas</a></li>
-                    {% endif %}
+                    <li class="nav-item"><a class="nav-link text-light px-3" href="{% url 'login' %}">Painel de Reservas</a></li>
                 </ul>
                 <div class="dropdown ms-auto mt-3 mt-lg-0">
                     <button class="btn rounded-circle dropdown-toggle text-white fw-bold" type="button" id="perfilMenu" data-bs-toggle="dropdown" aria-expanded="false" style="background-color: #066E8B; width: 42px; height: 42px; border: none;">
@@ -62,13 +37,24 @@
     </nav>
 
     <div class="container" style="max-width: 600px;">
+        
+        <div class="alert alert-info border-0 shadow-sm mb-4">
+            <h5 class="fw-bold mb-1">Passo 2: Detalhes da Reserva</h5>
+            <p class="mb-0 small">Você está solicitando o espaço: <strong>{{ area.nome }}</strong>.<br>
+            Atenção: O tempo máximo permitido é de {{ area.tempoDaReserva }} horas.</p>
+        </div>
+
         <div class="card p-4 border-0 shadow-sm" style="border-radius: 12px;">
-            <h3 class="fw-bold mb-4 text-center text-dark">{{ titulo }}</h3>
+            <h4 class="fw-bold mb-4 text-center text-dark">Data e Hora</h4>
             
             <form method="POST">
                 {% csrf_token %}
                 {{ form.as_p }}
-                <button type="submit" class="btn btn-primary w-100 mt-3 rounded-pill fw-bold" style="background-color: #066E8B; border: none;">Cadastrar</button>
+                
+                <div class="d-flex gap-2 mt-4">
+                    <a href="{% url 'home_morador' %}" class="btn btn-light w-50 fw-bold rounded-pill">Cancelar</a>
+                    <button type="submit" class="btn btn-primary w-50 rounded-pill fw-bold" style="background-color: #066E8B; border: none;">Confirmar Reserva</button>
+                </div>
             </form>
         </div>
     </div>

@@ -19,7 +19,7 @@ from django.urls import path
 from condominio_reservas import views
 
 urlpatterns = [
-    path('admin/', admin.site.urls), # Painel nativo do Django
+    path('admin/', admin.site.urls),
 
     # Rota do Meu Perfil
     path('meu-perfil/', views.perfil_view, name='perfil'),  
@@ -41,13 +41,16 @@ urlpatterns = [
     path('moradores/todos/', views.listar_todos_moradores, name='listar_todos_moradores'),
     path('meu-perfil/alterar-senha/', views.alterar_senha, name='alterar_senha'),
     
-    # Rotas do Gerenciar Locais (T6)
+    # Rota de desabilitar e abilitar morador
+    path('alternar_status_morador/<int:id>/', views.alternar_status_morador, name='alternar_status_morador'),
+    
+    # Rotas do Gerenciar Locais
     path('locais/', views.listar_locais, name='listar_locais'),
     path('locais/cadastrar/', views.cadastrar_local, name='cadastrar_local'),
     path('locais/editar/<int:id>/', views.editar_local, name='editar_local'),
     path('locais/deletar/<int:id>/', views.deletar_local, name='deletar_local'),
     path('locais/visualizar/<int:id>/', views.visualizar_local, name='visualizar_local'),
     
-    #Rota de desabilitar e abilitar morador (resolução da T5)
-    path('alternar_status_morador/<int:id>/', views.alternar_status_morador, name='alternar_status_morador'),
+    # Solicitar Reserva
+    path('reservar/<int:area_id>/', views.solicitar_reserva, name='solicitar_reserva'),
 ]
