@@ -203,7 +203,9 @@ def editar_local(request, id):
 def deletar_local(request, id):
     local = AreaComum.objects.get(id=id)
     local.delete()
-    messages.success(request, 'Área comum excluída com sucesso!')
+    # A mudança e o objetivo de manter a notificação com tom avermelhado, está aqui.
+    messages.error(request, 'Area comum excluida com sucesso')
+    
     return redirect('listar_locais')
 
 @login_required(login_url='login')

@@ -46,10 +46,10 @@ class AreaComum(models.Model):
         ('Disponivel', 'Disponível'),
         ('EmManutencao', 'Em Manutenção'),
     ]
-    nome = models.CharField(max_length=100)
+    nome = models.CharField(max_length=100, unique=True)
     capacidade = models.IntegerField()
     prazoCancelamentoDias = models.IntegerField()
-    tempoDaReserva = models.IntegerField(help_text="Tempo em horas")
+    tempoDaReserva = models.IntegerField()
     statusLocal = models.CharField(max_length=20, choices=STATUS_CHOICES, default='Disponivel')
 
 class Reserva(models.Model):

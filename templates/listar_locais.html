@@ -27,7 +27,10 @@
 
         {% if messages %}
             {% for message in messages %}
-                <div class="alert alert-{{ message.tags }} fw-bold">{{ message }}</div>
+                <div class="alert {% if message.tags == 'error' %}alert-danger{% else %}alert-{{ message.tags }}{% endif %} alert-dismissible fade show shadow-sm" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Fechar"></button>
+                </div>
             {% endfor %}
         {% endif %}
 
@@ -58,8 +61,29 @@
                                 <td class="text-center">
                                     <a href="{% url 'visualizar_local' local.id %}" class="btn btn-sm btn-info text-white rounded-pill px-3">Ver</a>
                                     <a href="{% url 'editar_local' local.id %}" class="btn btn-sm btn-warning text-dark rounded-pill px-3">Editar</a>
-                                    <a href="{% url 'deletar_local' local.id %}" class="btn btn-sm btn-danger rounded-pill px-3" onclick="return confirm('Tem certeza que deseja apagar?');">Excluir</a>
-                                </td>
+                                    
+                                    <button type="button" class="btn btn-sm btn-danger rounded-pill px-3" data-bs-toggle="modal" data-bs-target="#modalExcluir{{ local.id }}">
+                                        Excluir
+                                    </button>
+
+                                    <div class="modal fade" id="modalExcluir{{ local.id }}" tabindex="-1" aria-hidden="true">
+                                      <div class="modal-dialog modal-dialog-centered">
+                                        <div class="modal-content">
+                                          <div class="modal-header border-0 pb-0">
+                                            <h5 class="modal-title fw-bold text-dark">Confirmar Exclusão</h5>
+                                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+                                          </div>
+                                          <div class="modal-body text-start text-muted">
+                                            Tem certeza que deseja apagar a área <strong>{{ local.nome }}</strong>? Esta ação não poderá ser desfeita.
+                                          </div>
+                                          <div class="modal-footer border-0">
+                                            <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancelar</button>
+                                            <a href="{% url 'deletar_local' local.id %}" class="btn btn-danger">Sim, apagar</a>
+                                          </div>
+                                        </div>
+                                      </div>
+                                    </div>
+                                    </td>
                             </tr>
                             {% endfor %}
                         </tbody>
@@ -72,5 +96,7 @@
             {% endif %}
         </div>
     </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
