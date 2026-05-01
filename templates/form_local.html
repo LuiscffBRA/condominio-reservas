@@ -8,25 +8,15 @@
     <title>{{ titulo }}</title>
     
     <style>
-        /* O ERRO AGORA É UM BLOCO VERMELHÃO COM FUNDO! */
+        /* Oculta os bullets originais do Django para não duplicar o erro */
         ul.errorlist { 
-            list-style-type: none; 
-            padding: 1rem; 
-            background-color: #f8d7da; /* Fundo vermelho claro */
-            color: #842029; /* Texto vermelho escuro */
-            border: 1px solid #f5c2c7; /* Bordinha vermelha */
-            border-radius: 0.375rem; 
-            font-weight: bold; 
-            margin-bottom: 1.5rem; 
-            font-size: 0.95rem;
-        }
-        ul.errorlist li::before { 
-            content: "⚠️ "; 
+            display: none; 
         }
     </style>
 </head>
 <body style="background-color: #f4f6f9;">
     
+    <!-- parte não modificada -->
     <nav class="navbar navbar-expand-lg mb-5 shadow-sm" style="background-color: #1a2a3a; padding: 15px 0;">
         <div class="container">
             <a class="navbar-brand text-white fw-bold d-flex align-items-center" href="{% url 'login' %}">
@@ -65,6 +55,18 @@
         <div class="card p-4 border-0 shadow-sm" style="border-radius: 12px;">
             <h3 class="fw-bold mb-4 text-center text-dark">{{ titulo }}</h3>
             
+            <!-- PADRÃO OS PARA OS ERROS DE NOTIFICAÇÃO DO FORMULÁRIO -->
+            {% if form.errors %}
+                {% for field, errors in form.errors.items %}
+                    {% for error in errors %}
+                        <div class="alert alert-danger alert-dismissible fade show shadow-sm" role="alert">
+                            {{ error }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Fechar"></button>
+                        </div>
+                    {% endfor %}
+                {% endfor %}
+            {% endif %}
+
             <form method="POST">
                 {% csrf_token %}
                 {{ form.as_p }}
