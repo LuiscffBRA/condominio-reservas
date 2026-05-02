@@ -68,6 +68,7 @@ class FormularioAlterarSenha(PasswordChangeForm):
         self.fields['new_password1'].label = 'Nova Senha'
         self.fields['new_password2'].label = 'Confirme a Nova Senha'
         
+
 class ReservaForm(forms.ModelForm):
     class Meta:
         model = Reserva
@@ -82,7 +83,34 @@ class ReservaForm(forms.ModelForm):
             'horarioInicio': forms.TimeInput(attrs={'type': 'time', 'class': 'form-control mb-3'}),
             'horarioFim': forms.TimeInput(attrs={'type': 'time', 'class': 'form-control mb-3'}),
         }
-        
+
+    def __init__(self, *args, **kwargs):
+        self.area = kwargs.pop('area', None)
+        super().__init__(*args, **kwargs)
+
+    def clean(self):
+        cleaned_data = super().clean()
+        data_reserva = cleaned_data.get('dataReserva')
+        inicio = cleaned_data.get('horarioInicio')
+        fim = cleaned_data.get('horarioFim')
+
+        if data_reserva and inicio and fim:
+            if inicio >= fim:
+                self.add_error('horarioFim', 'O horário de término deve ser após o horário de início.')
+
+            if self.area:
+                conflitos = Reserva.objects.filter(
+                    areaComum=self.area,
+                    dataReserva=data_reserva,
+                    status='Aprovado',
+                    horarioInicio__lt=fim,
+                    horarioFim__gt=inicio
+                )
+                if conflitos.exists():
+                    raise forms.ValidationError('Já existe uma reserva para este local nesse dia e horário.')
+                    
+        return cleaned_data
+
 
 class LocalForm(forms.ModelForm):
     class Meta:

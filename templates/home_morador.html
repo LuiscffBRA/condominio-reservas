@@ -41,7 +41,10 @@
         
         {% if messages %}
             {% for message in messages %}
-                <div class="alert alert-{{ message.tags }} text-center fw-bold">{{ message }}</div>
+                <div class="alert alert-success alert-dismissible fade show text-center fw-bold shadow-sm" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Fechar"></button>
+                </div>
             {% endfor %}
         {% endif %}
 
@@ -53,7 +56,7 @@
         <div class="card border-0 shadow-sm rounded-4 mb-5">
             <div class="card-body p-0">
                 <div class="p-4 border-bottom">
-                    <h5 class="card-title fw-bold mb-0" style="color: #1e293b;">Minhas Solicitações</h5>
+                    <h5 class="card-title fw-bold mb-0" style="color: #1e293b;">Minhas Reservas</h5>
                 </div>
                 <div class="table-responsive">
                     <table class="table table-custom mb-0">
@@ -72,13 +75,7 @@
                                 <td>{{ reserva.dataReserva|date:"d/m/Y" }}</td> 
                                 <td class="text-muted">{{ reserva.horarioInicio }} - {{ reserva.horarioFim }}</td>
                                 <td class="text-center"> 
-                                    {% if reserva.status == 'Pendente' %}
-                                        <span class="badge bg-warning text-dark px-3 py-2 rounded-pill">Em Análise</span>
-                                    {% elif reserva.status == 'Aprovado' %}
-                                        <span class="badge bg-success px-3 py-2 rounded-pill">Confirmada</span>
-                                    {% else %}
-                                        <span class="badge bg-danger px-3 py-2 rounded-pill">Negada</span>
-                                    {% endif %}
+                                    <span class="badge bg-success px-3 py-2 rounded-pill">Confirmada</span>
                                 </td>
                             </tr>
                             {% empty %}
@@ -101,10 +98,48 @@
                         <h5 class="card-title fw-bold" style="color: #1e293b;">{{ area.nome }}</h5>
                         <p class="text-muted flex-grow-1 mb-4">Capacidade: Até {{ area.capacidade }} pessoas<br>
                         Reserva Máxima: {{ area.tempoDaReserva }} horas</p>
-                        <a href="{% url 'solicitar_reserva' area.id %}" class="btn btn-primary w-100 mt-auto rounded-pill fw-bold" style="background-color: #066E8B; border: none;">Fazer Reserva</a>
+                        
+                        <button type="button" class="btn btn-primary w-100 mt-auto rounded-pill fw-bold" style="background-color: #066E8B; border: none;" data-bs-toggle="modal" data-bs-target="#modalReserva{{ area.id }}">
+                            Fazer Reserva
+                        </button>
                     </div>
                 </div>
             </div>
+
+            <div class="modal fade" id="modalReserva{{ area.id }}" tabindex="-1" aria-labelledby="modalLabel{{ area.id }}" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content border-0 shadow-lg" style="border-radius: 12px;">
+                        
+                        <div class="modal-header border-bottom-0 pb-0 d-flex flex-column align-items-center">
+                            <button type="button" class="btn-close align-self-end" data-bs-dismiss="modal" aria-label="Close"></button>
+                            <div class="d-flex justify-content-center w-100 mt-2">
+                                <span class="badge bg-secondary rounded-pill px-3 py-2 me-2">1. Local ✓</span>
+                                <span class="badge rounded-pill px-3 py-2" style="background-color: #066E8B;">2. Data e Hora</span>
+                            </div>
+                        </div>
+
+                        <div class="modal-body pt-4">
+                            <div class="alert alert-info border-0 shadow-sm mb-4 text-center">
+                                <p class="mb-0 small">Reservando: <strong>{{ area.nome }}</strong>.<br>
+                                Tempo máximo: {{ area.tempoDaReserva }} horas.</p>
+                            </div>
+
+                            <div id="erro-ajax-{{ area.id }}"></div>
+
+                            <form id="formAjax{{ area.id }}" action="{% url 'solicitar_reserva' area.id %}" method="POST" onsubmit="enviarReservaAJAX(event, {{ area.id }})">
+                                {% csrf_token %}
+                                {{ form_reserva.as_p }}
+                                
+                                <div class="d-flex gap-2 mt-4">
+                                    <button type="button" class="btn btn-light w-50 fw-bold rounded-pill" data-bs-dismiss="modal">Cancelar</button>
+                                    <button type="submit" class="btn btn-primary w-50 rounded-pill fw-bold" style="background-color: #066E8B; border: none;">Confirmar Reserva</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             {% empty %}
             <div class="col-12 text-center text-muted">Nenhuma área disponível no momento.</div>
             {% endfor %}
@@ -112,5 +147,41 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+        function enviarReservaAJAX(event, areaId) {
+            event.preventDefault();
+            
+            const form = document.getElementById('formAjax' + areaId);
+            const url = form.getAttribute('action');
+            const erroContainer = document.getElementById('erro-ajax-' + areaId);
+            const formData = new FormData(form);
+
+            fetch(url, {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.sucesso) {
+                    window.location.reload();
+                } else {
+                    erroContainer.innerHTML = '';
+                    data.erros.forEach(erro => {
+                        erroContainer.innerHTML += `
+                            <div class="alert alert-danger alert-dismissible fade show shadow-sm text-center fw-bold" role="alert">
+                                ⚠️ ${erro}
+                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Fechar"></button>
+                            </div>
+                        `;
+                    });
+                }
+            })
+            .catch(error => console.error("Falha no AJAX:", error));
+        }
+    </script>
 </body>
 </html>

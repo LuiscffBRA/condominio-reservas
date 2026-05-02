@@ -1,9 +1,11 @@
 from django.shortcuts import render, redirect
+from django.http import JsonResponse
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import PasswordChangeForm
 from django.contrib.auth import update_session_auth_hash
 from django.contrib import messages
+from django.db.models import Case, When, Value, IntegerField
 from .models import Morador, AreaComum, Reserva
 from .forms import CadastroMoradorForm, EditarPerfilForm, FormularioAlterarSenha, LocalForm, ReservaForm
 
@@ -122,7 +124,16 @@ def perfil_view(request):
 
 @login_required(login_url='login')
 def listar_todos_moradores(request):
-    moradores = Morador.objects.filter(statusConta__in=['Aprovado', 'Desabilitado']).exclude(is_superuser=True).order_by('first_name')
+    moradores = Morador.objects.filter(
+        statusConta__in=['Aprovado', 'Desabilitado']
+    ).exclude(is_superuser=True).annotate(
+        ordem_status=Case(
+            When(statusConta='Aprovado', then=Value(1)),
+            When(statusConta='Desabilitado', then=Value(2)),
+            output_field=IntegerField(),
+        )
+    ).order_by('ordem_status', 'first_name')
+    
     return render(request, 'listar_todos.html', {'moradores': moradores})
 
 @login_required(login_url='login')
@@ -131,7 +142,6 @@ def alternar_status_morador(request, id):
     
     if morador.statusConta == 'Aprovado':
         morador.statusConta = 'Desabilitado'
-        # Mensagem vermelha para ação negativa
         messages.error(request, f"O acesso de {morador.first_name or morador.email} foi desabilitado.", extra_tags='danger fw-bold')
     elif morador.statusConta == 'Desabilitado':
         morador.statusConta = 'Aprovado'
@@ -200,7 +210,6 @@ def deletar_local(request, id):
     local = AreaComum.objects.get(id=id)
     local.delete()
     messages.error(request, 'Area comum excluida com sucesso')
-    
     return redirect('listar_locais')
 
 @login_required(login_url='login')
@@ -216,37 +225,40 @@ def home_morador(request):
         morador_logado = None
 
     minhas_reservas = Reserva.objects.filter(morador=morador_logado).order_by('-dataReserva') if morador_logado else []
-    
     areas_disponiveis = AreaComum.objects.filter(statusLocal='Disponivel').order_by('nome')
+    
+    form_reserva = ReservaForm()
 
     return render(request, 'home_morador.html', {
         'minhas_reservas': minhas_reservas,
-        'areas_disponiveis': areas_disponiveis
+        'areas_disponiveis': areas_disponiveis,
+        'form_reserva': form_reserva
     })
-
 
 @login_required(login_url='login')
 def solicitar_reserva(request, area_id):
-    area = AreaComum.objects.get(id=area_id)
-    
-    try:
-        morador_logado = request.user.morador
-    except:
-        messages.error(request, "Apenas moradores podem solicitar reservas.", extra_tags='danger fw-bold')
-        return redirect('login')
-
     if request.method == 'POST':
-        form = ReservaForm(request.POST)
+        area = AreaComum.objects.get(id=area_id)
+        
+        try:
+            morador_logado = request.user.morador
+        except:
+            return JsonResponse({'sucesso': False, 'erros': ["Apenas moradores podem solicitar reservas."]})
+
+        form = ReservaForm(request.POST, area=area)
+        
         if form.is_valid():
             reserva = form.save(commit=False)
             reserva.morador = morador_logado
             reserva.areaComum = area
-            reserva.status = 'Pendente'
+            reserva.status = 'Aprovado'
             reserva.save()
             
-            messages.success(request, f'Reserva para {area.nome} solicitada com sucesso! Aguarde a aprovação.')
-            return redirect('home_morador')
-    else:
-        form = ReservaForm()
+            messages.success(request, f'Reserva para {area.nome} confirmada com sucesso!')
+            return JsonResponse({'sucesso': True})
+            
+        else:
+            erros = [erro for lista_de_erros in form.errors.values() for erro in lista_de_erros]
+            return JsonResponse({'sucesso': False, 'erros': erros})
 
-    return render(request, 'solicitar_reserva.html', {'form': form, 'area': area})
+    return redirect('home_morador')
