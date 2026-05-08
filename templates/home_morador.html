@@ -72,7 +72,7 @@
                             {% for reserva in minhas_reservas %}
                             <tr>
                                 <td class="fw-medium">{{ reserva.areaComum.nome }}</td>
-                                <td>{{ reserva.dataReserva|date:"d/m/Y" }}</td> 
+                                <td>{{ reserva.data_formatada }}</td>
                                 <td class="text-muted">{{ reserva.horarioInicio }} - {{ reserva.horarioFim }}</td>
                                 <td class="text-center"> 
                                     <span class="badge bg-success px-3 py-2 rounded-pill">Confirmada</span>

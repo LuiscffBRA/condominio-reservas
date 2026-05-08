@@ -1,3 +1,4 @@
+import datetime
 from django import forms
 from .models import Morador, AreaComum, Reserva
 from django.contrib.auth.forms import PasswordChangeForm
@@ -70,18 +71,22 @@ class FormularioAlterarSenha(PasswordChangeForm):
         
 
 class ReservaForm(forms.ModelForm):
+    quantidadeHoras = forms.IntegerField(
+        min_value=1,
+        label='Quantidade de Horas',
+        widget=forms.NumberInput(attrs={'class': 'form-control mb-3', 'placeholder': 'Ex: 4'})
+    )
+
     class Meta:
         model = Reserva
-        fields = ['dataReserva', 'horarioInicio', 'horarioFim']
+        fields = ['dataReserva', 'horarioInicio']
         labels = {
             'dataReserva': 'Data da Reserva',
             'horarioInicio': 'Horário de Início',
-            'horarioFim': 'Horário de Término',
         }
         widgets = {
             'dataReserva': forms.DateInput(attrs={'type': 'date', 'class': 'form-control mb-3'}),
             'horarioInicio': forms.TimeInput(attrs={'type': 'time', 'class': 'form-control mb-3'}),
-            'horarioFim': forms.TimeInput(attrs={'type': 'time', 'class': 'form-control mb-3'}),
         }
 
     def __init__(self, *args, **kwargs):
@@ -92,24 +97,48 @@ class ReservaForm(forms.ModelForm):
         cleaned_data = super().clean()
         data_reserva = cleaned_data.get('dataReserva')
         inicio = cleaned_data.get('horarioInicio')
-        fim = cleaned_data.get('horarioFim')
+        horas = cleaned_data.get('quantidadeHoras')
 
-        if data_reserva and inicio and fim:
-            if inicio >= fim:
-                self.add_error('horarioFim', 'O horário de término deve ser após o horário de início.')
+        if data_reserva and inicio and horas:
+            if self.area and horas > self.area.tempoDaReserva:
+                self.add_error('quantidadeHoras', f'O tempo máximo permitido para este local é de {self.area.tempoDaReserva} horas.')
+                return cleaned_data
+
+            inicio_datetime = datetime.datetime.combine(data_reserva, inicio)
+            fim_datetime = inicio_datetime + datetime.timedelta(hours=horas)
+            
+            fim = fim_datetime.time()
+            cleaned_data['horarioFim'] = fim 
 
             if self.area:
-                conflitos = Reserva.objects.filter(
+                ontem = data_reserva - datetime.timedelta(days=1)
+                reservas_existentes = Reserva.objects.filter(
                     areaComum=self.area,
-                    dataReserva=data_reserva,
                     status='Aprovado',
-                    horarioInicio__lt=fim,
-                    horarioFim__gt=inicio
+                    dataReserva__in=[ontem, data_reserva]
                 )
-                if conflitos.exists():
-                    raise forms.ValidationError('Já existe uma reserva para este local nesse dia e horário.')
+                
+                for r in reservas_existentes:
+                    r_inicio_dt = datetime.datetime.combine(r.dataReserva, r.horarioInicio)
+                    
+                    if r.horarioFim < r.horarioInicio:
+                        r_fim_dt = r_inicio_dt + datetime.timedelta(days=1)
+                        r_fim_dt = r_fim_dt.replace(hour=r.horarioFim.hour, minute=r.horarioFim.minute)
+                    else:
+                        r_fim_dt = datetime.datetime.combine(r.dataReserva, r.horarioFim)
+                    
+                    if inicio_datetime < r_fim_dt and fim_datetime > r_inicio_dt:
+                        raise forms.ValidationError('Já existe uma reserva para este local nesse dia e horário. Por favor, escolha outro.')
                     
         return cleaned_data
+
+    def save(self, commit=True):
+        # Interceptamos o salvamento para injetar o 'horarioFim' calculado no banco de dados
+        reserva = super().save(commit=False)
+        reserva.horarioFim = self.cleaned_data.get('horarioFim')
+        if commit:
+            reserva.save()
+        return reserva
 
 
 class LocalForm(forms.ModelForm):

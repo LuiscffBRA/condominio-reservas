@@ -1,3 +1,4 @@
+import datetime
 from django.shortcuts import render, redirect
 from django.http import JsonResponse
 from django.contrib.auth import authenticate, login, logout
@@ -225,6 +226,17 @@ def home_morador(request):
         morador_logado = None
 
     minhas_reservas = Reserva.objects.filter(morador=morador_logado).order_by('-dataReserva') if morador_logado else []
+    
+    for reserva in minhas_reservas:
+        if reserva.horarioInicio > reserva.horarioFim:
+            prox_dia = reserva.dataReserva + datetime.timedelta(days=1)
+            if reserva.dataReserva.month == prox_dia.month:
+                reserva.data_formatada = f"{reserva.dataReserva.strftime('%d')}-{prox_dia.strftime('%d/%m/%Y')}"
+            else:
+                reserva.data_formatada = f"{reserva.dataReserva.strftime('%d/%m')} - {prox_dia.strftime('%d/%m/%Y')}"
+        else:
+            reserva.data_formatada = reserva.dataReserva.strftime('%d/%m/%Y')
+
     areas_disponiveis = AreaComum.objects.filter(statusLocal='Disponivel').order_by('nome')
     
     form_reserva = ReservaForm()
