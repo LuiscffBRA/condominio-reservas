@@ -28,9 +28,7 @@ class CadastroMoradorForm(forms.ModelForm):
         user = super().save(commit=False)
         user.set_password(self.cleaned_data['senha'])
         user.statusConta = 'Pendente' 
-        
         user.username = self.cleaned_data['email']
-        
         if commit:
             user.save()
         return user
@@ -64,30 +62,17 @@ class FormularioAlterarSenha(PasswordChangeForm):
         for field in self.fields.values():
             field.widget.attrs['class'] = 'form-control mb-2'
             field.widget.render_value = True
-        
         self.fields['old_password'].label = 'Senha Atual'
         self.fields['new_password1'].label = 'Nova Senha'
         self.fields['new_password2'].label = 'Confirme a Nova Senha'
-        
+
 
 class ReservaForm(forms.ModelForm):
-    quantidadeHoras = forms.IntegerField(
-        min_value=1,
-        label='Quantidade de Horas',
-        widget=forms.NumberInput(attrs={'class': 'form-control mb-3', 'placeholder': 'Ex: 4'})
-    )
+    dataFim_temp = forms.DateField(required=False)
 
     class Meta:
         model = Reserva
-        fields = ['dataReserva', 'horarioInicio']
-        labels = {
-            'dataReserva': 'Data da Reserva',
-            'horarioInicio': 'Horário de Início',
-        }
-        widgets = {
-            'dataReserva': forms.DateInput(attrs={'type': 'date', 'class': 'form-control mb-3'}),
-            'horarioInicio': forms.TimeInput(attrs={'type': 'time', 'class': 'form-control mb-3'}),
-        }
+        fields = ['dataReserva', 'horarioInicio', 'horarioFim']
 
     def __init__(self, *args, **kwargs):
         self.area = kwargs.pop('area', None)
@@ -96,49 +81,53 @@ class ReservaForm(forms.ModelForm):
     def clean(self):
         cleaned_data = super().clean()
         data_reserva = cleaned_data.get('dataReserva')
+        data_fim_temp = cleaned_data.get('dataFim_temp')
         inicio = cleaned_data.get('horarioInicio')
-        horas = cleaned_data.get('quantidadeHoras')
+        fim = cleaned_data.get('horarioFim')
 
-        if data_reserva and inicio and horas:
-            if self.area and horas > self.area.tempoDaReserva:
-                self.add_error('quantidadeHoras', f'O tempo máximo permitido para este local é de {self.area.tempoDaReserva} horas.')
-                return cleaned_data
-
-            inicio_datetime = datetime.datetime.combine(data_reserva, inicio)
-            fim_datetime = inicio_datetime + datetime.timedelta(hours=horas)
+        if data_reserva and inicio and fim:
+            inicio_dt = datetime.datetime.combine(data_reserva, inicio)
             
-            fim = fim_datetime.time()
-            cleaned_data['horarioFim'] = fim 
+            if data_fim_temp and data_fim_temp != data_reserva:
+                fim_dt = datetime.datetime.combine(data_fim_temp, fim)
+            else:
+                if fim <= inicio:
+                    fim_dt = datetime.datetime.combine(data_reserva + datetime.timedelta(days=1), fim)
+                else:
+                    fim_dt = datetime.datetime.combine(data_reserva, fim)
+
+            duracao_horas = (fim_dt - inicio_dt).total_seconds() / 3600.0
+            if self.area and duracao_horas > self.area.tempoDaReserva:
+                raise forms.ValidationError(f'Sua seleção dá {int(duracao_horas)} horas. O limite do local é de {self.area.tempoDaReserva} horas.')
 
             if self.area:
-                ontem = data_reserva - datetime.timedelta(days=1)
+                current_date = data_reserva - datetime.timedelta(days=1)
+                end_date_check = fim_dt.date()
+                dates_to_check = []
+                
+                while current_date <= end_date_check:
+                    dates_to_check.append(current_date)
+                    current_date += datetime.timedelta(days=1)
+
                 reservas_existentes = Reserva.objects.filter(
                     areaComum=self.area,
                     status='Aprovado',
-                    dataReserva__in=[ontem, data_reserva]
+                    dataReserva__in=dates_to_check
                 )
                 
                 for r in reservas_existentes:
-                    r_inicio_dt = datetime.datetime.combine(r.dataReserva, r.horarioInicio)
-                    
-                    if r.horarioFim < r.horarioInicio:
-                        r_fim_dt = r_inicio_dt + datetime.timedelta(days=1)
-                        r_fim_dt = r_fim_dt.replace(hour=r.horarioFim.hour, minute=r.horarioFim.minute)
+                    r_inicio = datetime.datetime.combine(r.dataReserva, r.horarioInicio)
+                    if r.horarioFim <= r.horarioInicio:
+                        r_fim = r_inicio + datetime.timedelta(days=1)
+                        r_fim = r_fim.replace(hour=r.horarioFim.hour, minute=r.horarioFim.minute)
                     else:
-                        r_fim_dt = datetime.datetime.combine(r.dataReserva, r.horarioFim)
+                        r_fim = datetime.datetime.combine(r.dataReserva, r.horarioFim)
                     
-                    if inicio_datetime < r_fim_dt and fim_datetime > r_inicio_dt:
-                        raise forms.ValidationError('Já existe uma reserva para este local nesse dia e horário. Por favor, escolha outro.')
+                    # Se cruzou, bloqueia!
+                    if inicio_dt < r_fim and fim_dt > r_inicio:
+                        raise forms.ValidationError('Já existe uma reserva para este local nesse período. Verifique os blocos vermelhos no calendário.')
                     
         return cleaned_data
-
-    def save(self, commit=True):
-        # Interceptamos o salvamento para injetar o 'horarioFim' calculado no banco de dados
-        reserva = super().save(commit=False)
-        reserva.horarioFim = self.cleaned_data.get('horarioFim')
-        if commit:
-            reserva.save()
-        return reserva
 
 
 class LocalForm(forms.ModelForm):
@@ -165,10 +154,8 @@ class LocalForm(forms.ModelForm):
     def clean_nome(self):
         nome = self.cleaned_data.get('nome')
         areas_existentes = AreaComum.objects.filter(nome__iexact=nome)
-        
         if self.instance and self.instance.pk:
             areas_existentes = areas_existentes.exclude(pk=self.instance.pk)
-            
         if areas_existentes.exists():
             raise forms.ValidationError('Já existe uma área comum cadastrada com este nome.')
         return nome

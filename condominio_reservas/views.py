@@ -10,6 +10,24 @@ from django.db.models import Case, When, Value, IntegerField
 from .models import Morador, AreaComum, Reserva
 from .forms import CadastroMoradorForm, EditarPerfilForm, FormularioAlterarSenha, LocalForm, ReservaForm
 
+def buscar_ocupacao(request, area_id):
+    reservas = Reserva.objects.filter(areaComum_id=area_id, status='Aprovado')
+    eventos = []
+    for r in reservas:
+        inicio = datetime.datetime.combine(r.dataReserva, r.horarioInicio)
+        if r.horarioFim <= r.horarioInicio:
+            fim = datetime.datetime.combine(r.dataReserva + datetime.timedelta(days=1), r.horarioFim)
+        else:
+            fim = datetime.datetime.combine(r.dataReserva, r.horarioFim)
+            
+        eventos.append({
+            'title': f'{r.horarioInicio.strftime("%H:%M")} às {r.horarioFim.strftime("%H:%M")}',
+            'start': inicio.isoformat(),
+            'end': fim.isoformat(),
+            'display': 'block'
+        })
+    return JsonResponse(eventos, safe=False)
+
 def login_view(request):
     if request.user.is_authenticated:
         if request.user.is_superuser or hasattr(request.user, 'sindico'):
@@ -22,26 +40,20 @@ def login_view(request):
     if request.method == 'POST':
         email = request.POST.get('email')
         senha = request.POST.get('senha')
-
         user = authenticate(request, email=email, password=senha)
-
         if user is not None:
             if user.is_superuser:
                 login(request, user)
                 return redirect('home_sindico')
-            
             if user.statusConta == 'Pendente':
                 messages.warning(request, 'Sua conta ainda está aguardando aprovação do Síndico.')
                 return redirect('login')
-            
             elif user.statusConta == 'Negado':
                 messages.error(request, 'SEU CADASTRO FOI NEGADO. Procure a administração.', extra_tags='danger fw-bold')
                 return redirect('login')
-                
             elif user.statusConta == 'Desabilitado':
                 messages.error(request, 'SUA CONTA FOI DESABILITADA.', extra_tags='danger fw-bold')
                 return redirect('login')
-            
             else:
                 login(request, user)
                 if hasattr(user, 'sindico'):
@@ -52,7 +64,6 @@ def login_view(request):
                     return redirect('home_morador')
         else:
             messages.error(request, 'Email ou senha incorretos.')
-
     return render(request, 'login.html')
 
 def cadastro_view(request):
@@ -111,7 +122,6 @@ def perfil_view(request):
         morador_logado = request.user.morador
     except:
         morador_logado = request.user
-
     if request.method == 'POST':
         form = EditarPerfilForm(request.POST, instance=morador_logado)
         if form.is_valid():
@@ -120,7 +130,6 @@ def perfil_view(request):
             return redirect('perfil')
     else:
         form = EditarPerfilForm(instance=morador_logado)
-        
     return render(request, 'perfil.html', {'form': form})
 
 @login_required(login_url='login')
@@ -134,20 +143,17 @@ def listar_todos_moradores(request):
             output_field=IntegerField(),
         )
     ).order_by('ordem_status', 'first_name')
-    
     return render(request, 'listar_todos.html', {'moradores': moradores})
 
 @login_required(login_url='login')
 def alternar_status_morador(request, id):
     morador = Morador.objects.get(id=id)
-    
     if morador.statusConta == 'Aprovado':
         morador.statusConta = 'Desabilitado'
         messages.error(request, f"O acesso de {morador.first_name or morador.email} foi desabilitado.", extra_tags='danger fw-bold')
     elif morador.statusConta == 'Desabilitado':
         morador.statusConta = 'Aprovado'
         messages.success(request, f"O acesso de {morador.first_name or morador.email} foi habilitado novamente.")
-        
     morador.save()
     return redirect('listar_todos_moradores')
 
@@ -156,13 +162,11 @@ def alterar_senha(request):
     if request.method == 'POST':
         old_pwd = request.POST.get('old_password')
         new_pwd = request.POST.get('new_password1')
-        
         if old_pwd and new_pwd and old_pwd == new_pwd:
             if request.user.check_password(old_pwd):
                 messages.warning(request, '⚠️ A nova senha não pode ser igual à sua senha atual!')
                 form = FormularioAlterarSenha(request.user, request.POST)
                 return render(request, 'alterar_senha.html', {'form': form})
-
         form = FormularioAlterarSenha(request.user, request.POST)
         if form.is_valid():
             user = form.save()
@@ -173,7 +177,6 @@ def alterar_senha(request):
             messages.error(request, 'Erro ao alterar a senha. Verifique os dados digitados.')
     else:
         form = FormularioAlterarSenha(request.user)
-    
     return render(request, 'alterar_senha.html', {'form': form})
 
 @login_required(login_url='login')
@@ -224,7 +227,7 @@ def home_morador(request):
         morador_logado = request.user.morador
     except:
         morador_logado = None
-
+        
     minhas_reservas = Reserva.objects.filter(morador=morador_logado).order_by('-dataReserva') if morador_logado else []
     
     for reserva in minhas_reservas:
@@ -236,11 +239,10 @@ def home_morador(request):
                 reserva.data_formatada = f"{reserva.dataReserva.strftime('%d/%m')} - {prox_dia.strftime('%d/%m/%Y')}"
         else:
             reserva.data_formatada = reserva.dataReserva.strftime('%d/%m/%Y')
-
+            
     areas_disponiveis = AreaComum.objects.filter(statusLocal='Disponivel').order_by('nome')
-    
     form_reserva = ReservaForm()
-
+    
     return render(request, 'home_morador.html', {
         'minhas_reservas': minhas_reservas,
         'areas_disponiveis': areas_disponiveis,
@@ -251,26 +253,21 @@ def home_morador(request):
 def solicitar_reserva(request, area_id):
     if request.method == 'POST':
         area = AreaComum.objects.get(id=area_id)
-        
         try:
             morador_logado = request.user.morador
         except:
             return JsonResponse({'sucesso': False, 'erros': ["Apenas moradores podem solicitar reservas."]})
-
+            
         form = ReservaForm(request.POST, area=area)
-        
         if form.is_valid():
             reserva = form.save(commit=False)
             reserva.morador = morador_logado
             reserva.areaComum = area
             reserva.status = 'Aprovado'
             reserva.save()
-            
             messages.success(request, f'Reserva para {area.nome} confirmada com sucesso!')
             return JsonResponse({'sucesso': True})
-            
         else:
             erros = [erro for lista_de_erros in form.errors.values() for erro in lista_de_erros]
             return JsonResponse({'sucesso': False, 'erros': erros})
-
     return redirect('home_morador')
