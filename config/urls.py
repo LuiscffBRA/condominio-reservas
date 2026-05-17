@@ -53,4 +53,7 @@ urlpatterns = [
     
     # Solicitar Reserva
     path('reservar/<int:area_id>/', views.solicitar_reserva, name='solicitar_reserva'),
+    
+    # API de Ocupação do Calendário
+    path('api/ocupacao/<int:area_id>/', views.buscar_ocupacao, name='buscar_ocupacao'),
 ]

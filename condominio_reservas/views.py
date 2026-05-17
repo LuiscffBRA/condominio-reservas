@@ -10,23 +10,32 @@ from django.db.models import Case, When, Value, IntegerField
 from .models import Morador, AreaComum, Reserva
 from .forms import CadastroMoradorForm, EditarPerfilForm, FormularioAlterarSenha, LocalForm, ReservaForm
 
+@login_required(login_url='login')
 def buscar_ocupacao(request, area_id):
-    reservas = Reserva.objects.filter(areaComum_id=area_id, status='Aprovado')
-    eventos = []
-    for r in reservas:
-        inicio = datetime.datetime.combine(r.dataReserva, r.horarioInicio)
-        if r.horarioFim <= r.horarioInicio:
-            fim = datetime.datetime.combine(r.dataReserva + datetime.timedelta(days=1), r.horarioFim)
-        else:
-            fim = datetime.datetime.combine(r.dataReserva, r.horarioFim)
-            
-        eventos.append({
-            'title': f'{r.horarioInicio.strftime("%H:%M")} às {r.horarioFim.strftime("%H:%M")}',
-            'start': inicio.isoformat(),
-            'end': fim.isoformat(),
-            'display': 'block'
-        })
-    return JsonResponse(eventos, safe=False)
+    try:
+        reservas = Reserva.objects.filter(areaComum_id=area_id, status='Aprovado')
+        eventos = []
+        for r in reservas:
+            if not r.dataReserva or not r.horarioInicio or not r.horarioFim:
+                continue
+                
+            inicio = datetime.datetime.combine(r.dataReserva, r.horarioInicio)
+            if r.horarioFim <= r.horarioInicio:
+                fim = datetime.datetime.combine(r.dataReserva + datetime.timedelta(days=1), r.horarioFim)
+            else:
+                fim = datetime.datetime.combine(r.dataReserva, r.horarioFim)
+                
+            eventos.append({
+                'title': f'{r.horarioInicio.strftime("%H:%M")} as {r.horarioFim.strftime("%H:%M")}',
+                'start': inicio.isoformat(),
+                'end': fim.isoformat(),
+                'color': '#dc3545',
+                'textColor': '#ffffff',
+                'display': 'block'
+            })
+        return JsonResponse(eventos, safe=False)
+    except Exception as e:
+        return JsonResponse({'erro': str(e)}, status=500)
 
 def login_view(request):
     if request.user.is_authenticated:
@@ -46,10 +55,10 @@ def login_view(request):
                 login(request, user)
                 return redirect('home_sindico')
             if user.statusConta == 'Pendente':
-                messages.warning(request, 'Sua conta ainda está aguardando aprovação do Síndico.')
+                messages.warning(request, 'Sua conta ainda esta aguardando aprovacao do Sindico.')
                 return redirect('login')
             elif user.statusConta == 'Negado':
-                messages.error(request, 'SEU CADASTRO FOI NEGADO. Procure a administração.', extra_tags='danger fw-bold')
+                messages.error(request, 'SEU CADASTRO FOI NEGADO. Procure a administracao.', extra_tags='danger fw-bold')
                 return redirect('login')
             elif user.statusConta == 'Desabilitado':
                 messages.error(request, 'SUA CONTA FOI DESABILITADA.', extra_tags='danger fw-bold')
@@ -71,7 +80,7 @@ def cadastro_view(request):
         form = CadastroMoradorForm(request.POST)
         if form.is_valid():
             form.save()
-            messages.success(request, 'Cadastro realizado com sucesso! Aguarde a aprovação.')
+            messages.success(request, 'Cadastro realizado com sucesso! Aguarde a aprovacao.')
             return redirect('login')
         else:
             for lista_de_erros in form.errors.values():
@@ -164,7 +173,7 @@ def alterar_senha(request):
         new_pwd = request.POST.get('new_password1')
         if old_pwd and new_pwd and old_pwd == new_pwd:
             if request.user.check_password(old_pwd):
-                messages.warning(request, '⚠️ A nova senha não pode ser igual à sua senha atual!')
+                messages.warning(request, 'A nova senha nao pode ser igual a sua senha atual!')
                 form = FormularioAlterarSenha(request.user, request.POST)
                 return render(request, 'alterar_senha.html', {'form': form})
         form = FormularioAlterarSenha(request.user, request.POST)
@@ -190,7 +199,7 @@ def cadastrar_local(request):
         form = LocalForm(request.POST)
         if form.is_valid():
             form.save()
-            messages.success(request, 'Área comum cadastrada com sucesso!')
+            messages.success(request, 'Area comum cadastrada com sucesso!')
             return redirect('listar_locais')
     else:
         form = LocalForm()
@@ -203,7 +212,7 @@ def editar_local(request, id):
         form = LocalForm(request.POST, instance=local)
         if form.is_valid():
             form.save()
-            messages.success(request, 'Área comum atualizada com sucesso!')
+            messages.success(request, 'Area comum atualizada com sucesso!')
             return redirect('listar_locais')
     else:
         form = LocalForm(instance=local)
