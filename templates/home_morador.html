@@ -19,7 +19,7 @@
         .fc-day-today { background-color: rgba(6, 110, 139, 0.05) !important; }
         .fc-day-past { opacity: 0.4; pointer-events: none; }
         .fc-highlight { background-color: rgba(6, 110, 139, 0.15) !important; border-top: 2px solid #066E8B; border-bottom: 2px solid #066E8B; }
-        .fc-event { background-color: #dc3545 !important; border: none !important; color: #ffffff !important; border-radius: 4px; padding: 4px 6px; font-size: 0.75rem; font-weight: 700; box-shadow: 0 2px 4px rgba(220, 53, 69, 0.3) !important; cursor: default; }
+        .fc-event { background-color: #066E8B !important; border: none !important; color: #ffffff !important; border-radius: 4px; padding: 4px 6px; font-size: 0.75rem; font-weight: 700; cursor: default; }
         .fc-button-primary { background-color: #1e293b !important; border: none !important; border-radius: 8px !important; text-transform: capitalize; }
         .fc-toolbar-title { font-size: 1.4rem !important; font-weight: 800; color: #0f172a; text-transform: capitalize; }
     </style>
@@ -83,7 +83,7 @@
                                 <th>Area</th>
                                 <th>Data</th>
                                 <th>Horario</th>
-                                <th class="text-center">Status</th> 
+                                <th class="text-center">Acoes</th> 
                             </tr>
                         </thead>
                         <tbody>
@@ -93,7 +93,15 @@
                                 <td>{{ reserva.data_formatada }}</td>
                                 <td class="text-muted">{{ reserva.horarioInicio }} - {{ reserva.horarioFim }}</td>
                                 <td class="text-center"> 
-                                    <span class="badge bg-success px-3 py-2 rounded-pill">Confirmada</span>
+                                    {% if reserva.pode_editar_cancelar %}
+                                        <button type="button" class="btn btn-sm btn-outline-primary fw-bold me-1" data-bs-toggle="modal" data-bs-target="#modalEditar{{ reserva.id }}">Editar</button>
+                                        <form action="{% url 'cancelar_reserva' reserva.id %}" method="POST" class="d-inline">
+                                            {% csrf_token %}
+                                            <button type="submit" class="btn btn-sm btn-outline-danger fw-bold" onclick="return confirm('Tem certeza que deseja cancelar esta reserva?')">Cancelar</button>
+                                        </form>
+                                    {% else %}
+                                        <span class="badge bg-secondary px-3 py-2 rounded-pill">Bloqueado</span>
+                                    {% endif %}
                                 </td>
                             </tr>
                             {% empty %}
@@ -106,6 +114,45 @@
                 </div>
             </div>
         </div>
+
+        {% for reserva in minhas_reservas %}
+        {% if reserva.pode_editar_cancelar %}
+        <div class="modal fade" id="modalEditar{{ reserva.id }}" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content border-0 shadow-lg" style="border-radius: 16px;">
+                    <div class="modal-header bg-light border-bottom-0 pb-3 pt-4 px-4">
+                        <h5 class="modal-title fw-bold text-dark">Editar Reserva: {{ reserva.areaComum.nome }}</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body p-4 bg-white">
+                        <div id="erro-ajax-editar-{{ reserva.id }}"></div>
+                        <form id="formEditarAjax{{ reserva.id }}" action="{% url 'editar_reserva' reserva.id %}" method="POST" onsubmit="enviarEdicaoAJAX(event, {{ reserva.id }})">
+                            {% csrf_token %}
+                            <div class="mb-3">
+                                <label class="form-label fw-bold small">Data da Reserva</label>
+                                <input type="date" name="dataReserva" value="{{ reserva.dataReserva|date:'Y-m-d' }}" class="form-control bg-light border-0 shadow-sm" required>
+                            </div>
+                            <div class="row mb-4">
+                                <div class="col-6">
+                                    <label class="form-label fw-bold small">Inicio</label>
+                                    <input type="time" name="horarioInicio" value="{{ reserva.horarioInicio|time:'H:i' }}" class="form-control bg-light border-0 shadow-sm" required>
+                                </div>
+                                <div class="col-6">
+                                    <label class="form-label fw-bold small">Fim</label>
+                                    <input type="time" name="horarioFim" value="{{ reserva.horarioFim|time:'H:i' }}" class="form-control bg-light border-0 shadow-sm" required>
+                                </div>
+                            </div>
+                            <div class="d-grid gap-2">
+                                <button type="submit" class="btn btn-primary rounded-pill fw-bold" style="background-color: #066E8B; border: none;">Salvar Alteracoes</button>
+                                <button type="button" class="btn btn-light rounded-pill fw-bold" data-bs-dismiss="modal">Cancelar</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+        {% endfor %}
 
         <h5 class="fw-bold mb-3" style="color: #1e293b;">Selecione a Area Disponivel</h5>
         <div class="row g-4 mb-5">
@@ -197,6 +244,8 @@
         document.addEventListener('DOMContentLoaded', function() {
             const modais = document.querySelectorAll('.modal');
             modais.forEach(modal => {
+                if (modal.id.startsWith('modalEditar')) return;
+                
                 modal.addEventListener('shown.bs.modal', function () {
                     const areaId = this.id.replace('modalReserva', '');
                     const calendarEl = document.getElementById('calendar' + areaId);
@@ -267,7 +316,7 @@
                                     const evStart = e.start.substring(0, 10);
                                     const evEnd = e.end ? e.end.substring(0, 10) : evStart;
                                     return evStart <= diaClicado && evEnd >= diaClicado;
-                                });
+                                }).sort((a, b) => a.start.localeCompare(b.start));
 
                                 if (eventosDoDia.length === 0) {
                                     resumoBox.innerHTML = `
@@ -304,6 +353,7 @@
                 });
 
                 modal.addEventListener('hidden.bs.modal', function () {
+                    if (this.id.startsWith('modalEditar')) return;
                     const areaId = this.id.replace('modalReserva', '');
                     const form = document.getElementById('formAjax' + areaId);
                     if(form) {
@@ -331,6 +381,37 @@
             const form = document.getElementById('formAjax' + areaId);
             const url = form.getAttribute('action');
             const erroContainer = document.getElementById('erro-ajax-' + areaId);
+            const formData = new FormData(form);
+
+            fetch(url, {
+                method: 'POST',
+                body: formData,
+                headers: { 'X-Requested-With': 'XMLHttpRequest' }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.sucesso) {
+                    window.location.reload();
+                } else {
+                    erroContainer.innerHTML = '';
+                    data.erros.forEach(erro => {
+                        erroContainer.innerHTML += `
+                            <div class="alert alert-danger alert-dismissible fade show text-center py-3 shadow-sm fw-bold" role="alert" style="font-size: 0.95rem;">
+                                ${erro}
+                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                            </div>
+                        `;
+                    });
+                }
+            })
+            .catch(error => {});
+        }
+
+        function enviarEdicaoAJAX(event, reservaId) {
+            event.preventDefault();
+            const form = document.getElementById('formEditarAjax' + reservaId);
+            const url = form.getAttribute('action');
+            const erroContainer = document.getElementById('erro-ajax-editar-' + reservaId);
             const formData = new FormData(form);
 
             fetch(url, {

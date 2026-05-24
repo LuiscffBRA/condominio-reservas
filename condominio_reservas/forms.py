@@ -17,10 +17,10 @@ class CadastroMoradorForm(forms.ModelForm):
         confirmar_senha = cleaned_data.get('confirmar_senha')
 
         if senha and len(senha) < 8:
-            self.add_error('senha', 'A senha deve ter no mínimo 8 caracteres.')
+            self.add_error('senha', 'A senha deve ter no minimo 8 caracteres.')
 
         if senha and confirmar_senha and senha != confirmar_senha:
-            self.add_error('confirmar_senha', 'As senhas não coincidem.')
+            self.add_error('confirmar_senha', 'As senhas nao coincidem.')
 
         return cleaned_data
 
@@ -32,7 +32,6 @@ class CadastroMoradorForm(forms.ModelForm):
         if commit:
             user.save()
         return user
-
 
 class EditarPerfilForm(forms.ModelForm):
     class Meta:
@@ -52,9 +51,8 @@ class EditarPerfilForm(forms.ModelForm):
     def clean_first_name(self):
         nome = self.cleaned_data.get('first_name')
         if not nome or not nome.strip():
-            raise forms.ValidationError("O nome não pode ficar em branco.")
+            raise forms.ValidationError("O nome nao pode ficar em branco.")
         return nome
-            
 
 class FormularioAlterarSenha(PasswordChangeForm):
     def __init__(self, *args, **kwargs):
@@ -65,7 +63,6 @@ class FormularioAlterarSenha(PasswordChangeForm):
         self.fields['old_password'].label = 'Senha Atual'
         self.fields['new_password1'].label = 'Nova Senha'
         self.fields['new_password2'].label = 'Confirme a Nova Senha'
-
 
 class ReservaForm(forms.ModelForm):
     dataFim_temp = forms.DateField(required=False)
@@ -98,7 +95,7 @@ class ReservaForm(forms.ModelForm):
 
             duracao_horas = (fim_dt - inicio_dt).total_seconds() / 3600.0
             if self.area and duracao_horas > self.area.tempoDaReserva:
-                raise forms.ValidationError(f'Sua seleção dá {int(duracao_horas)} horas. O limite do local é de {self.area.tempoDaReserva} horas.')
+                raise forms.ValidationError(f'Sua selecao da {int(duracao_horas)} horas. O limite do local e de {self.area.tempoDaReserva} horas.')
 
             if self.area:
                 current_date = data_reserva - datetime.timedelta(days=1)
@@ -115,6 +112,9 @@ class ReservaForm(forms.ModelForm):
                     dataReserva__in=dates_to_check
                 )
                 
+                if self.instance and self.instance.pk:
+                    reservas_existentes = reservas_existentes.exclude(pk=self.instance.pk)
+                
                 for r in reservas_existentes:
                     r_inicio = datetime.datetime.combine(r.dataReserva, r.horarioInicio)
                     if r.horarioFim <= r.horarioInicio:
@@ -123,22 +123,20 @@ class ReservaForm(forms.ModelForm):
                     else:
                         r_fim = datetime.datetime.combine(r.dataReserva, r.horarioFim)
                     
-                    # Se cruzou, bloqueia!
                     if inicio_dt < r_fim and fim_dt > r_inicio:
-                        raise forms.ValidationError('Já existe uma reserva para este local nesse período. Verifique os blocos vermelhos no calendário.')
+                        raise forms.ValidationError('Ja existe uma reserva para este local nesse periodo. Verifique os blocos no calendario.')
                     
         return cleaned_data
-
 
 class LocalForm(forms.ModelForm):
     class Meta:
         model = AreaComum
         fields = ['nome', 'capacidade', 'prazoCancelamentoDias', 'tempoDaReserva', 'statusLocal']
         labels = {
-            'nome': 'Nome do Local (Ex: Salão de Festas)',
-            'capacidade': 'Capacidade Máxima (Pessoas)',
+            'nome': 'Nome do Local (Ex: Salao de Festas)',
+            'capacidade': 'Capacidade Maxima (Pessoas)',
             'prazoCancelamentoDias': 'Prazo para Cancelamento (Dias)',
-            'tempoDaReserva': 'Tempo máximo da reserva (Horas)',
+            'tempoDaReserva': 'Tempo maximo da reserva (Horas)',
             'statusLocal': 'Status Atual',
         }
 
@@ -157,7 +155,7 @@ class LocalForm(forms.ModelForm):
         if self.instance and self.instance.pk:
             areas_existentes = areas_existentes.exclude(pk=self.instance.pk)
         if areas_existentes.exists():
-            raise forms.ValidationError('Já existe uma área comum cadastrada com este nome.')
+            raise forms.ValidationError('Ja existe uma area comum cadastrada com este nome.')
         return nome
 
     def clean(self):
@@ -165,7 +163,7 @@ class LocalForm(forms.ModelForm):
         if cleaned_data.get('capacidade', 0) < 1:
             self.add_error('capacidade', 'A capacidade deve ser de pelo menos 1 pessoa.')
         if cleaned_data.get('prazoCancelamentoDias', 0) < 0:
-            self.add_error('prazoCancelamentoDias', 'O prazo não pode ser negativo.')
+            self.add_error('prazoCancelamentoDias', 'O prazo nao pode ser negativo.')
         if cleaned_data.get('tempoDaReserva', 0) < 1:
-            self.add_error('tempoDaReserva', 'O tempo de reserva deve ser no mínimo 1 hora.')
+            self.add_error('tempoDaReserva', 'O tempo de reserva deve ser no minimo 1 hora.')
         return cleaned_data

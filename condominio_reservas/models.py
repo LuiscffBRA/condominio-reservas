@@ -38,13 +38,13 @@ class Administrador(Usuario):
 
 class Sindico(Administrador):
     class Meta:
-        verbose_name = "Síndico"
-        verbose_name_plural = "Síndicos"
+        verbose_name = "Sindico"
+        verbose_name_plural = "Sindicos"
 
 class AreaComum(models.Model):
     STATUS_CHOICES = [
-        ('Disponivel', 'Disponível'),
-        ('EmManutencao', 'Em Manutenção'),
+        ('Disponivel', 'Disponivel'),
+        ('EmManutencao', 'Em Manutencao'),
     ]
     nome = models.CharField(max_length=100, unique=True)
     capacidade = models.IntegerField()
@@ -57,6 +57,7 @@ class Reserva(models.Model):
     horarioInicio = models.TimeField()
     horarioFim = models.TimeField()
     status = models.CharField(max_length=50, default="Pendente")
+    pago = models.BooleanField(default=False)
     
     morador = models.ForeignKey(Morador, on_delete=models.CASCADE)
     areaComum = models.ForeignKey(AreaComum, on_delete=models.CASCADE)
