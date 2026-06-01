@@ -164,10 +164,39 @@ def home_sindico(request):
         statusConta='Aprovado'
     ).count()
 
-    reservas = Reserva.objects.all().order_by(
-        '-dataReserva',
-        'horarioInicio'
-    )
+    reservas_queryset = Reserva.objects.all()
+
+    filtro_morador = request.GET.get('morador')
+    filtro_local = request.GET.get('local')
+    filtro_data = request.GET.get('data')
+    filtro_pago = request.GET.get('pago')
+    filtro_inicio = request.GET.get('horario_inicio')
+    filtro_fim = request.GET.get('horario_fim')
+
+    if filtro_morador:
+        reservas_queryset = reservas_queryset.filter(
+            morador__first_name__icontains=filtro_morador
+        ) | reservas_queryset.filter(
+            morador__email__icontains=filtro_morador
+        )
+        
+    if filtro_local:
+        reservas_queryset = reservas_queryset.filter(areaComum_id=filtro_local)
+        
+    if filtro_data:
+        reservas_queryset = reservas_queryset.filter(dataReserva=filtro_data)
+        
+    if filtro_pago:
+        status_pago = True if filtro_pago == 'sim' else False
+        reservas_queryset = reservas_queryset.filter(pago=status_pago)
+
+    if filtro_inicio:
+        reservas_queryset = reservas_queryset.filter(horarioInicio=filtro_inicio)
+
+    if filtro_fim:
+        reservas_queryset = reservas_queryset.filter(horarioFim=filtro_fim)
+
+    reservas = reservas_queryset.order_by('-dataReserva', 'horarioInicio')
 
     for reserva in reservas:
         if reserva.horarioInicio > reserva.horarioFim:
@@ -183,13 +212,15 @@ def home_sindico(request):
                     f"{reserva.dataReserva.strftime('%d/%m')} - "
                     f"{prox_dia.strftime('%d/%m/%Y')}"
                 )
-
         else:
             reserva.data_formatada = reserva.dataReserva.strftime('%d/%m/%Y')
 
+    areas_comuns = AreaComum.objects.all().order_by('nome')
+
     return render(request, 'home_sindico.html', {
         'total_moradores': total_moradores,
-        'reservas': reservas
+        'reservas': reservas,
+        'areas_comuns': areas_comuns
     })
 
 @login_required(login_url='login')

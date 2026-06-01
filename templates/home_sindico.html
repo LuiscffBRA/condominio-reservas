@@ -85,6 +85,100 @@
             </div>
         </div>
 
+        <div class="card border-0 shadow-sm rounded-4 p-4 mb-5 bg-white">
+            <h5 class="fw-bold mb-3" style="color: #1e293b;">Filtragem</h5>
+            <form method="GET" class="text-start">
+                
+                <div class="row g-3 mb-3">
+                    <div class="col-md-4">
+                        <label class="form-label fw-medium text-secondary small">Morador (Nome ou E-mail)</label>
+                        <input type="text" name="morador" class="form-control" placeholder="Ex: Luis" style="border-radius: 8px;" value="{{ request.GET.morador|default:'' }}">
+                    </div>
+
+                    <div class="col-md-4">
+                        <label class="form-label fw-medium text-secondary small">Área Comum (Local)</label>
+                        <select name="local" class="form-select" style="border-radius: 8px;">
+                            <option value="">Todas as áreas</option>
+                            {% for local in areas_comuns %}
+                                <option value="{{ local.id }}" {% if request.GET.local == local.id|slugify %}selected{% endif %}>{{ local.nome }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="col-md-4">
+                        <label class="form-label fw-medium text-secondary small">Status de Pagamento</label>
+                        <select name="pago" class="form-select" style="border-radius: 8px;">
+                            <option value="">Todos</option>
+                            <option value="sim" {% if request.GET.pago == 'sim' %}selected{% endif %}>Pagas</option>
+                            <option value="nao" {% if request.GET.pago == 'nao' %}selected{% endif %}>Não Pagas</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="row g-3">
+                    <div class="col-md-4">
+                        <label class="form-label fw-medium text-secondary small">Data da Reserva</label>
+                        <input type="date" name="data" class="form-control" style="border-radius: 8px;" value="{{ request.GET.data }}">
+                    </div>
+
+                    <div class="col-md-3">
+                        <label class="form-label fw-medium text-secondary small">Horário de Início</label>
+                        <input type="time" name="horario_inicio" class="form-control" style="border-radius: 8px;" value="{{ request.GET.horario_inicio }}">
+                    </div>
+
+                    <div class="col-md-3">
+                        <label class="form-label fw-medium text-secondary small">Horário de Fim</label>
+                        <input type="time" name="horario_fim" class="form-control" style="border-radius: 8px;" value="{{ request.GET.horario_fim }}">
+                    </div>
+
+                    <div class="col-md-2 d-flex align-items-end gap-2">
+                        <button type="submit" class="btn btn-primary w-100 fw-bold py-2" style="background-color: #066E8B; border: none; border-radius: 8px;">Filtrar</button>
+                        <a href="{% url 'home_sindico' %}" class="btn btn-outline-secondary py-2 d-flex align-items-center justify-content-center" style="border-radius: 8px; width: 45px;" title="Limpar Filtros">❌</a>
+                    </div>
+                </div>
+
+            </form>
+        </div>
+        <div class="card border-0 shadow-sm rounded-4 p-4 mb-5 bg-white">
+            <h5 class="fw-bold mb-3" style="color: #1e293b;">Lista de Reservas</h5>
+            <div class="table-responsive">
+                <table class="table table-hover align-middle">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Morador</th>
+                            <th>Área Comum</th>
+                            <th>Data</th>
+                            <th>Horário</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for reserva in reservas %}
+                        <tr>
+                            <td class="fw-bold">{{ reserva.morador.first_name }} {{ reserva.morador.last_name }}</td>
+                            <td>{{ reserva.areaComum.nome }}</td>
+                            <td>{{ reserva.data_formatada }}</td>
+                            <td>{{ reserva.horarioInicio }} às {{ reserva.horarioFim }}</td>
+                            <td>
+                                {% if reserva.pago %}
+                                    <span class="badge bg-success">Pago</span>
+                                {% else %}
+                                    <span class="badge bg-danger">Pendente</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="5" class="text-center text-muted py-4">
+                                Nenhuma reserva encontrada com os filtros aplicados.
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
         <div class="row g-4 mb-5">
             <div class="col-md-8">
                 <div class="card card-grafico h-100 border-0 shadow-sm rounded-4">
