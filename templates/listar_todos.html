@@ -32,7 +32,7 @@
                     {% if user.is_superuser or user.sindico or user.administrador %}
                         <li class="nav-item"><a class="nav-link text-light px-3" href="{% url 'login' %}">Painel</a></li>
                         <li class="nav-item"><a class="nav-link text-light px-3" href="{% url 'listar_locais' %}">Áreas</a></li>
-                        <li class="nav-item"><a class="nav-link text-light px-3" href="#">Reservas</a></li>
+                        <li class="nav-item"><a class="nav-link text-light px-3" href="{% url 'listar_reservas' %}">Reservas</a></li>
                         <li class="nav-item"><a class="nav-link text-warning fw-bold px-3" href="{% url 'listar_usuarios' %}">Aprovações</a></li>
                     {% else %}
                         <li class="nav-item"><a class="nav-link text-light px-3" href="{% url 'login' %}">Painel de Reservas</a></li>
