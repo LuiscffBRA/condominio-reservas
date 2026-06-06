@@ -83,7 +83,8 @@
                                 <th>Area</th>
                                 <th>Data</th>
                                 <th>Horario</th>
-                                <th class="text-center">Acoes</th> 
+                                <th>Prazo Limite</th>
+                                <th class="text-center">Açoes</th> 
                             </tr>
                         </thead>
                         <tbody>
@@ -92,21 +93,35 @@
                                 <td class="fw-medium">{{ reserva.areaComum.nome }}</td>
                                 <td>{{ reserva.data_formatada }}</td>
                                 <td class="text-muted">{{ reserva.horarioInicio }} - {{ reserva.horarioFim }}</td>
+                                <td>
+                                    <span class="badge bg-light text-secondary border">
+                                        Até {{ reserva.areaComum.prazoCancelamentoDias }} dias antes
+                                    </span>
+                                </td>
                                 <td class="text-center"> 
-                                    {% if reserva.pode_editar_cancelar %}
+                                    
+                                    {% if not reserva.pago or user.is_staff or user.is_superuser or reserva.pode_editar_cancelar %}
+                                        
                                         <button type="button" class="btn btn-sm btn-outline-primary fw-bold me-1" data-bs-toggle="modal" data-bs-target="#modalEditar{{ reserva.id }}">Editar</button>
                                         <form action="{% url 'cancelar_reserva' reserva.id %}" method="POST" class="d-inline">
                                             {% csrf_token %}
                                             <button type="submit" class="btn btn-sm btn-outline-danger fw-bold" onclick="return confirm('Tem certeza que deseja cancelar esta reserva?')">Cancelar</button>
                                         </form>
+
                                     {% else %}
-                                        <span class="badge bg-secondary px-3 py-2 rounded-pill">Bloqueado</span>
+                                        
+                                        <button type="button" class="btn btn-sm btn-light text-muted fw-bold me-1" disabled style="cursor: not-allowed;" title="Edição bloqueada após o prazo para reservas pagas.">Editar</button>
+                                        <button type="button" class="btn btn-sm btn-danger fw-bold" data-bs-toggle="modal" data-bs-target="#modalMulta{{ reserva.id }}">
+                                            Cancelar c/ Multa
+                                        </button>
+
                                     {% endif %}
+
                                 </td>
                             </tr>
                             {% empty %}
                             <tr>
-                                <td colspan="4" class="text-center py-4 text-muted">Voce ainda nao possui reservas.</td>
+                                <td colspan="5" class="text-center py-4 text-muted">Voce ainda nao possui reservas.</td>
                             </tr>
                             {% endfor %}
                         </tbody>
@@ -146,6 +161,36 @@
                                 <button type="submit" class="btn btn-primary rounded-pill fw-bold" style="background-color: #066E8B; border: none;">Salvar Alteracoes</button>
                                 <button type="button" class="btn btn-light rounded-pill fw-bold" data-bs-dismiss="modal">Cancelar</button>
                             </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+        {% endfor %}
+
+        {% for reserva in minhas_reservas %}
+        {% if reserva.pago and not reserva.pode_editar_cancelar %}
+        <div class="modal fade" id="modalMulta{{ reserva.id }}" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content border-0 shadow-lg" style="border-radius: 16px;">
+                    <div class="modal-header bg-danger text-white border-bottom-0 py-3 px-4" style="border-top-left-radius: 16px; border-top-right-radius: 16px;">
+                        <h5 class="modal-title fw-bold">Cancelamento com Multa</h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body p-4 bg-white text-start">
+                        <p class="text-dark fw-bold mb-2">Atenção, {{ user.first_name }}!</p>
+                        <p class="text-secondary small">O prazo de antecedência mínima de <strong>{{ reserva.areaComum.prazoCancelamentoDias }} dias</strong> para cancelar a reserva da área <strong>{{ reserva.areaComum.nome }}</strong> sem custos já expirou.</p>
+                        
+                        <div class="alert alert-warning border-0 small mb-0 mt-3" role="alert" style="background-color: #fffbeb; border-left: 4px solid #f59e0b !important; color: #b45309;">
+                            <strong>Regra de Negócio:</strong> Ao confirmar, a data será liberada imediatamente para seus vizinhos no painel. Contudo, uma taxa administrativa de cancelamento tardio será lançada no boleto do seu apartamento.
+                        </div>
+                    </div>
+                    <div class="modal-footer bg-light border-top-0 py-3 px-4" style="border-bottom-left-radius: 16px; border-bottom-right-radius: 16px;">
+                        <button type="button" class="btn btn-sm btn-light rounded-pill fw-bold px-3" data-bs-dismiss="modal">Desistir</button>
+                        <form action="{% url 'cancelar_reserva' reserva.id %}" method="POST" class="d-inline">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-sm btn-danger rounded-pill fw-bold px-4">Confirmar e Liberar Área</button>
                         </form>
                     </div>
                 </div>
