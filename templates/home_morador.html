@@ -27,7 +27,7 @@
 <body style="background-color: #f4f6f9;">
     
     {% if messages %}
-        <div class="position-fixed top-0 start-50 translate-middle-x mt-4" style="z-index: 9999; width: 90%; max-width: 500px;">
+        <div class="position-fixed top-0 start-50 translate-middle-x mt-5" style="z-index: 9999; width: 90%; max-width: 500px;">
             {% for message in messages %}
                 <div class="alert {% if message.tags == 'error' %}alert-danger fw-bold{% else %}alert-{{ message.tags }}{% endif %} text-center py-3 shadow-lg alert-dismissible fade show" role="alert" style="font-size: 0.95rem;">
                     {{ message }}
@@ -103,10 +103,7 @@
                                     {% if not reserva.pago or user.is_staff or user.is_superuser or reserva.pode_editar_cancelar %}
                                         
                                         <button type="button" class="btn btn-sm btn-outline-primary fw-bold me-1" data-bs-toggle="modal" data-bs-target="#modalEditar{{ reserva.id }}">Editar</button>
-                                        <form action="{% url 'cancelar_reserva' reserva.id %}" method="POST" class="d-inline">
-                                            {% csrf_token %}
-                                            <button type="submit" class="btn btn-sm btn-outline-danger fw-bold" onclick="return confirm('Tem certeza que deseja cancelar esta reserva?')">Cancelar</button>
-                                        </form>
+                                        <button type="button" class="btn btn-sm btn-outline-danger fw-bold" data-bs-toggle="modal" data-bs-target="#modalConfirmarCancelar{{ reserva.id }}">Cancelar</button>
 
                                     {% else %}
                                         
@@ -161,6 +158,35 @@
                                 <button type="submit" class="btn btn-primary rounded-pill fw-bold" style="background-color: #066E8B; border: none;">Salvar Alteracoes</button>
                                 <button type="button" class="btn btn-light rounded-pill fw-bold" data-bs-dismiss="modal">Cancelar</button>
                             </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+        {% endfor %}
+
+        {% for reserva in minhas_reservas %}
+        {% if not reserva.pago or user.is_staff or user.is_superuser or reserva.pode_editar_cancelar %}
+        <div class="modal fade" id="modalConfirmarCancelar{{ reserva.id }}" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered" style="max-width: 500px;">
+                <div class="modal-content border-0 shadow-lg" style="border-radius: 12px; padding: 10px;">
+                    <div class="modal-header border-bottom-0 pb-2 pt-3 px-4 d-flex justify-content-between align-items-center">
+                        <h5 class="modal-title fw-bold text-dark" style="font-size: 1.25rem;">Confirmar Cancelamento</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body py-2 px-4 text-start">
+                        <p class="text-secondary" style="font-size: 0.95rem;">
+                            Tem certeza que deseja cancelar esta reserva?
+                        </p>
+                    </div>
+                    <div class="modal-footer border-top-0 pt-2 pb-3 px-4 d-flex justify-content-end gap-2">
+                        <button type="button" class="btn fw-semibold text-secondary bg-transparent border-0 px-3 py-2" data-bs-dismiss="modal" style="font-size: 0.95rem;">Cancelar</button>
+                        <form action="{% url 'cancelar_reserva' reserva.id %}" method="POST" class="d-inline">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-danger fw-semibold px-4 py-2" style="background-color: #dc3545; border: none; border-radius: 6px; font-size: 0.95rem;">
+                                Sim, cancelar
+                            </button>
                         </form>
                     </div>
                 </div>
@@ -289,7 +315,7 @@
         document.addEventListener('DOMContentLoaded', function() {
             const modais = document.querySelectorAll('.modal');
             modais.forEach(modal => {
-                if (modal.id.startsWith('modalEditar')) return;
+                if (modal.id.startsWith('modalEditar') || modal.id.startsWith('modalConfirmarCancelar')) return;
                 
                 modal.addEventListener('shown.bs.modal', function () {
                     const areaId = this.id.replace('modalReserva', '');
@@ -398,7 +424,7 @@
                 });
 
                 modal.addEventListener('hidden.bs.modal', function () {
-                    if (this.id.startsWith('modalEditar')) return;
+                    if (this.id.startsWith('modalEditar') || this.id.startsWith('modalConfirmarCancelar')) return;
                     const areaId = this.id.replace('modalReserva', '');
                     const form = document.getElementById('formAjax' + areaId);
                     if(form) {
