@@ -63,10 +63,7 @@ class Reserva(models.Model):
         ("Pendente", "Pendente"),
         ("Aprovado", "Aprovado"),
         ("Cancelado", "Cancelado Sem Custos"),
-        (
-            "Cancelado_Multa",
-            "Cancelado com Multa",
-        ),  # <--- Vai aparecer na tela do sindico, indicando quem é a pessoa que está devendo.
+        ("Cancelado_Multa","Cancelado com Multa"),  # <--- Vai aparecer na tela do sindico, indicando quem é a pessoa que está devendo.
     ]
 
     dataReserva = models.DateField()
