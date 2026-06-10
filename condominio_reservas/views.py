@@ -7,6 +7,7 @@ from django.contrib.auth.forms import PasswordChangeForm
 from django.contrib.auth import update_session_auth_hash
 from django.contrib import messages
 from django.db.models import Case, When, Value, IntegerField
+from django.db.models import Q
 from .models import Morador, AreaComum, Reserva
 from .forms import (
     CadastroMoradorForm,
@@ -694,4 +695,28 @@ def alternar_pagamento_reserva(request, id):
         except Reserva.DoesNotExist:
             messages.error(request, "Reserva nao encontrada.")
 
-    return redirect("home_sindico")
+    return redirect("gerenciar_pagamentos")
+
+@login_required(login_url="login")
+def gerenciar_pagamentos(request):
+    # Buscamos apenas reservas ativas que não foram pagas OU reservas que foram canceladas com multa
+    reservas_pendentes = Reserva.objects.filter(
+        Q(pago=False, status="Aprovado") | Q(status="Cancelado_Multa")
+    ).order_by("-dataReserva", "horarioInicio")
+
+    # Tratamento da data formatada para a exibição na tabela
+    for reserva in reservas_pendentes:
+        if reserva.horarioInicio > reserva.horarioFim:
+            prox_dia = reserva.dataReserva + datetime.timedelta(days=1)
+            if reserva.dataReserva.month == prox_dia.month:
+                reserva.data_formatada = f"{reserva.dataReserva.strftime('%d')}-{prox_dia.strftime('%d/%m/%Y')}"
+            else:
+                reserva.data_formatada = f"{reserva.dataReserva.strftime('%d/%m')} - {prox_dia.strftime('%d/%m/%Y')}"
+        else:
+            reserva.data_formatada = reserva.dataReserva.strftime("%d/%m/%Y")
+
+    return render(
+        request,
+        "gerenciar_pagamentos.html",
+        {"reservas_pendentes": reservas_pendentes}
+    )

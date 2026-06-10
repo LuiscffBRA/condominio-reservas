@@ -1,0 +1,98 @@
+{% extends 'base.html' %} {% block content %}
+<div class="container mt-5">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="fw-bold" style="color: #0A2540;">Controle Financeiro de Reservas</h1>
+            <p class="text-muted">Gerencie pagamentos pendentes e cobranças de multas por cancelamento tardio.</p>
+        </div>
+        <a href="{% url 'home_sindico' %}" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left"></i> Voltar ao Painel
+        </a>
+    </div>
+
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss-out="alert" aria-label="Close"></button>
+            </div>
+        {% endfor %}
+    {% endif %}
+
+    <div class="card shadow-sm border-0 rounded-3">
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th class="ps-4 py-3">Morador</th>
+                            <th class="py-3">Área Comum</th>
+                            <th class="py-3">Data</th>
+                            <th class="py-3">Horário</th>
+                            <th class="py-3">Motivo da Cobrança</th>
+                            <th class="py-3 text-center">Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for reserva in reservas_pendentes %}
+                        <tr>
+                            <td class="ps-4">
+                                <span class="fw-bold d-block text-dark">{{ reserva.morador.first_name }}</span>
+                                <small class="text-muted">{{ reserva.morador.email }}</small>
+                            </td>
+                            
+                            <td>
+                                <span class="badge bg-secondary bg-opacity-10 text-secondary border border-secondary border-opacity-25 px-2.5 py-1.5 fs-7">
+                                    {{ reserva.areaComum.nome }}
+                                </span>
+                            </td>
+                            
+                            <td>{{ reserva.data_formatada }}</td>
+                            
+                            <td>{{ reserva.horarioInicio|time:"H:i" }} às {{ reserva.horarioFim|time:"H:i" }}</td>
+                            
+                            <td>
+                                {% if reserva.status == 'Cancelado_Multa' %}
+                                    <span class="badge bg-danger bg-opacity-10 text-danger border border-danger border-opacity-25 px-2.5 py-1.5">
+                                        Multa (Cancelamento Tardio)
+                                    </span>
+                                {% else %}
+                                    <span class="badge bg-warning bg-opacity-10 text-warning border border-warning border-opacity-25 px-2.5 py-1.5">
+                                        Taxa de Uso Pendente
+                                    </span>
+                                {% endif %}
+                            </td>
+                            
+                            <td class="text-center pe-4">
+                                <form action="{% url 'alternar_pagamento_reserva' reserva.id %}" method="POST" class="d-inline">
+                                    {% csrf_token %}
+                                    {% if reserva.pago %}
+                                        <button type="submit" class="btn btn-sm btn-outline-danger px-3 rounded-pill">
+                                            Estornar Pagamento
+                                        </button>
+                                    {% else %}
+                                        <button type="submit" class="btn btn-sm btn-success px-4 rounded-pill shadow-sm">
+                                            Confirmar Pagamento
+                                        </button>
+                                    {% endif %}
+                                </form>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="6" class="text-center py-5">
+                                <div class="text-muted mb-2">
+                                    <i class="bi bi-check2-circle fs-1 text-success"></i>
+                                </div>
+                                <h5 class="fw-bold text-dark">Tudo em dia!</h5>
+                                <p class="mb-0 text-muted">Não há nenhuma reserva pendente de pagamento ou multas em aberto.</p>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

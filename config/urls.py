@@ -38,4 +38,7 @@ urlpatterns = [
     path('api/ocupacao/<int:area_id>/', views.buscar_ocupacao, name='buscar_ocupacao'),
 
     path('sindico/reservas/', views.listar_reservas, name='listar_reservas'),
+    
+    path('sindico/pagamentos/', views.gerenciar_pagamentos, name='gerenciar_pagamentos'),
+    path('sindico/pagamentos/alternar/<int:id>/', views.alternar_pagamento_reserva, name='alternar_pagamento_reserva'),
 ]
