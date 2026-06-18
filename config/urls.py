@@ -41,4 +41,6 @@ urlpatterns = [
     
     path('sindico/pagamentos/', views.gerenciar_pagamentos, name='gerenciar_pagamentos'),
     path('sindico/pagamentos/alternar/<int:id>/', views.alternar_pagamento_reserva, name='alternar_pagamento_reserva'),
+    
+    path('sindico/ocupacao-atual/', views.ver_ocupacao_atual, name='ver_ocupacao_atual'),
 ]

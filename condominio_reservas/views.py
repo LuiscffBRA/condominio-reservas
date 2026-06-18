@@ -548,7 +548,7 @@ def cancelar_reserva(request, id):
                 # Parte em faz sincronia com as coisas do BD que foram atualizada e faz o sindico ver quem ta devendo
                 reserva.status = "Cancelado_Multa"
 
-                # Libera o espaço mudando a data da reserva para o passado antigo (ex: ano 2000),
+                # Libera o espaço mudando a data della reserva para o passado antigo (ex: ano 2000),
                 # assim limpa o dia atual para os vizinhos reservarem!
                 reserva.dataReserva = datetime.date(2000, 1, 1)
                 reserva.save()
@@ -697,14 +697,13 @@ def alternar_pagamento_reserva(request, id):
 
     return redirect("gerenciar_pagamentos")
 
+
 @login_required(login_url="login")
 def gerenciar_pagamentos(request):
-    # Buscamos apenas reservas ativas que não foram pagas OU reservas que foram canceladas com multa
     reservas_pendentes = Reserva.objects.filter(
         Q(pago=False, status="Aprovado") | Q(status="Cancelado_Multa")
     ).order_by("-dataReserva", "horarioInicio")
 
-    # Tratamento da data formatada para a exibição na tabela
     for reserva in reservas_pendentes:
         if reserva.horarioInicio > reserva.horarioFim:
             prox_dia = reserva.dataReserva + datetime.timedelta(days=1)
@@ -719,4 +718,36 @@ def gerenciar_pagamentos(request):
         request,
         "gerenciar_pagamentos.html",
         {"reservas_pendentes": reservas_pendentes}
+    )
+
+
+@login_required(login_url="login")
+def ver_ocupacao_atual(request):
+    # Pega a data de hoje
+    hoje = datetime.date.today()
+    
+    # Filtra apenas reservas do dia de hoje que estão ativas ('Aprovado')
+    reservas_hoje = Reserva.objects.filter(
+        dataReserva=hoje,
+        status="Aprovado"
+    ).order_by("horarioInicio")
+    
+    # Ajustando a data para como vai aparecer na tela
+    for reserva in reservas_hoje:
+        if reserva.horarioInicio > reserva.horarioFim:
+            prox_dia = reserva.dataReserva + datetime.timedelta(days=1)
+            if reserva.dataReserva.month == prox_dia.month:
+                reserva.data_formatada = f"{reserva.dataReserva.strftime('%d')}-{prox_dia.strftime('%d/%m/%Y')}"
+            else:
+                reserva.data_formatada = f"{reserva.dataReserva.strftime('%d/%m')} - {prox_dia.strftime('%d/%m/%Y')}"
+        else:
+            reserva.data_formatada = reserva.dataReserva.strftime("%d/%m/%Y")
+            
+    return render(
+        request,
+        "ocupacao_atual.html",
+        {
+            "reservas_hoje": reservas_hoje,
+            "hoje_formatado": hoje.strftime("%d/%m/%Y")
+        }
     )
