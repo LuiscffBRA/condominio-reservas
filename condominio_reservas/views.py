@@ -328,7 +328,6 @@ def home_morador(request):
     except:
         morador_logado = None
 
-    # O Filtro corrigido está aqui:
     minhas_reservas = (
         Reserva.objects.filter(morador=morador_logado, status__in=["Pendente", "Aprovado"]).order_by("-dataReserva", "horarioInicio")
         if morador_logado else []
@@ -402,7 +401,7 @@ def cancelar_reserva(request, id):
 
             if reserva.pago and dias_restantes < reserva.areaComum.prazoCancelamentoDias:
                 reserva.status = "Cancelado_Multa"
-                reserva.dataReserva = datetime.date(2000, 1, 1) 
+                # A LINHA DO ANO 2000 FOI REMOVIDA DAQUI! 
                 reserva.save()
                 messages.warning(
                     request,
