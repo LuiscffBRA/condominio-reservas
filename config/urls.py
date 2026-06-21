@@ -33,8 +33,6 @@ urlpatterns = [
     path('reservar/cancelar/<int:id>/', views.cancelar_reserva, name='cancelar_reserva'),
     path('reservar/editar/<int:id>/', views.editar_reserva, name='editar_reserva'),
     
-    path('sindico/reservas/alternar-pagamento/<int:id>/', views.alternar_pagamento_reserva, name='alternar_pagamento_reserva'),
-    
     path('api/ocupacao/<int:area_id>/', views.buscar_ocupacao, name='buscar_ocupacao'),
 
     path('sindico/reservas/', views.listar_reservas, name='listar_reservas'),
@@ -43,4 +41,5 @@ urlpatterns = [
     path('sindico/pagamentos/alternar/<int:id>/', views.alternar_pagamento_reserva, name='alternar_pagamento_reserva'),
     
     path('sindico/ocupacao-atual/', views.ver_ocupacao_atual, name='ver_ocupacao_atual'),
+    path('sindico/relatorio/', views.relatorio_oficial, name='relatorio_oficial'),
 ]
