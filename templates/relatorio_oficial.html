@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>Extrato Detalhado - Condominio Estrela</title>
+    <style>
+        @page { size: A4 portrait; margin: 15mm; }
+        body { font-family: 'Times New Roman', Times, serif; color: #000; margin: 0; font-size: 10pt; }
+        
+        @media print {
+            body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+            .no-print { display: none !important; }
+        }
+
+        .header { border-bottom: 2px solid #000; padding-bottom: 10px; margin-bottom: 20px; }
+        .header h1 { margin: 0; font-size: 16pt; text-transform: uppercase; }
+        .header p { margin: 2px 0 0 0; font-size: 10pt; }
+        
+        .info-table { width: 100%; margin-bottom: 20px; font-size: 10pt; }
+        .info-table td { padding: 2px 0; }
+        
+        h2 { font-size: 12pt; text-transform: uppercase; border-bottom: 1px solid #ccc; padding-bottom: 3px; margin-top: 30px; margin-bottom: 10px; }
+        
+        .data-table { width: 100%; border-collapse: collapse; margin-bottom: 20px; font-size: 9pt; }
+        .data-table th, .data-table td { border: 1px solid #444; padding: 6px; text-align: left; }
+        .data-table th { background-color: #f0f0f0; font-weight: bold; text-transform: uppercase; font-size: 8pt; }
+        .data-table tr:nth-child(even) { background-color: #fafafa; }
+        
+        .text-center { text-align: center !important; }
+        .text-right { text-align: right !important; }
+        .alert-text { color: #d32f2f; font-weight: bold; }
+    </style>
+</head>
+<body onload="window.print()">
+
+    <div class="header">
+        <h1>Relatorio Detalhado de Operacoes e Reservas</h1>
+        <p>Condominio Estrela - Sistema de Gestao</p>
+    </div>
+
+    <table class="info-table">
+        <tr>
+            <td><strong>Emitido por:</strong> Sindico(a) {{ sindico_nome }}</td>
+            <td class="text-right"><strong>Data de Emissao:</strong> {{ hoje }}</td>
+        </tr>
+    </table>
+
+    <h2>1. Extrato de Inadimplencia e Multas (Cancelamento Tardio)</h2>
+    <table class="data-table">
+        <thead>
+            <tr>
+                <th>Morador(a)</th>
+                <th>E-mail de Contato</th>
+                <th>Unidade</th>
+                <th>Local Reservado</th>
+                <th>Data Alvo</th>
+                <th>Status Financeiro</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for r in reservas_multadas %}
+            <tr>
+                <td>{{ r.morador.first_name }} {{ r.morador.last_name }}</td>
+                <td>{{ r.morador.email }}</td>
+                <td class="text-center">Bl. {{ r.morador.bloco }} - Ap. {{ r.morador.apartamento }}</td>
+                <td>{{ r.areaComum.nome }}</td>
+                <td class="text-center">{{ r.dataReserva|date:"d/m/Y" }}</td>
+                <td class="alert-text">
+                    {% if r.status == 'Cancelado_Multa' %}
+                        Multa Aplicada (Fora do Prazo)
+                    {% else %}
+                        Taxa Pendente (Nao Pago)
+                    {% endif %}
+                </td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="6" class="text-center">Nenhum registro de multa ou inadimplencia ativo.</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <h2>2. Espelho de Reservas Aprovadas</h2>
+    <table class="data-table">
+        <thead>
+            <tr>
+                <th>Data da Reserva</th>
+                <th>Horario</th>
+                <th>Localizacao</th>
+                <th>Morador Responsavel</th>
+                <th>Unidade</th>
+                <th>Pagamento</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for r in reservas_ativas %}
+            <tr>
+                <td class="text-center">{{ r.dataReserva|date:"d/m/Y" }}</td>
+                <td class="text-center">{{ r.horarioInicio|time:"H:i" }} - {{ r.horarioFim|time:"H:i" }}</td>
+                <td>{{ r.areaComum.nome }}</td>
+                <td>{{ r.morador.first_name }} {{ r.morador.last_name }}</td>
+                <td class="text-center">Bl. {{ r.morador.bloco }} - Ap. {{ r.morador.apartamento }}</td>
+                <td class="text-center">
+                    {% if r.pago %}
+                        Pago
+                    {% else %}
+                        Pendente
+                    {% endif %}
+                </td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="6" class="text-center">Nenhuma reserva ativa registrada no sistema.</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <h2>3. Parametros do Sistema (Areas Comuns)</h2>
+    <table class="data-table">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Area Comum</th>
+                <th class="text-center">Capacidade Limite</th>
+                <th class="text-center">Tempo Max. Reserva</th>
+                <th class="text-center">Prazo Limite Cancelamento</th>
+                <th class="text-center">Status Atual</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for a in areas %}
+            <tr>
+                <td class="text-center">{{ a.id }}</td>
+                <td>{{ a.nome }}</td>
+                <td class="text-center">{{ a.capacidade }} pessoas</td>
+                <td class="text-center">{{ a.tempoDaReserva }} horas</td>
+                <td class="text-center">{{ a.prazoCancelamentoDias }} dias antes</td>
+                <td class="text-center">
+                    {% if a.statusLocal == 'Disponivel' %}
+                        Disponivel
+                    {% else %}
+                        Manutencao
+                    {% endif %}
+                </td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="6" class="text-center">Nenhum local configurado no banco de dados.</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <div style="margin-top: 40px; font-size: 8pt; color: #555; text-align: center; border-top: 1px solid #ccc; padding-top: 10px;">
+        Documento gerado automaticamente pelo Sistema Condominio Estrela.<br>
+        Auditoria de Reservas e Controle.
+    </div>
+
+    <div class="no-print text-center" style="margin-top: 20px;">
+        <button onclick="window.close()" style="padding: 8px 16px; font-size: 11pt; cursor: pointer;">Fechar Extrato</button>
+    </div>
+
+</body>
+</html>

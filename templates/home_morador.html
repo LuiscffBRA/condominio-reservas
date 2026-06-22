@@ -1,83 +1,513 @@
 {% load static %}
-
 <!DOCTYPE html>
 <html lang="pt-br">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js'></script>
     <link href="{% static 'css/estiloMorador.css' %}" rel="stylesheet">
-
-    <title>Condomínio Estrela</title>
-
+    <title>Condominio Estrela</title>
+    <style>
+        .fc { font-family: 'Segoe UI', system-ui, sans-serif; color: #1e293b; }
+        .fc-theme-standard td, .fc-theme-standard th { border-color: #f1f5f9; }
+        .fc-scrollgrid { border: 1px solid #e2e8f0; border-radius: 12px; overflow: hidden; }
+        .fc-col-header-cell { background-color: #f8fafc; padding: 12px 0; }
+        .fc-col-header-cell-cushion { color: #64748b; font-size: 0.85rem; font-weight: 700; text-transform: uppercase; text-decoration: none !important; }
+        .fc-daygrid-day-number { color: #334155; font-weight: 600; text-decoration: none !important; padding: 8px; margin: 4px; border-radius: 50%; transition: all 0.2s; }
+        .fc-daygrid-day-number:hover { background-color: #e2e8f0; color: #0f172a; }
+        .fc-day-today { background-color: rgba(6, 110, 139, 0.05) !important; }
+        .fc-day-past { opacity: 0.4; pointer-events: none; }
+        .fc-highlight { background-color: rgba(6, 110, 139, 0.15) !important; border-top: 2px solid #066E8B; border-bottom: 2px solid #066E8B; }
+        .fc-event { background-color: #066E8B !important; border: none !important; color: #ffffff !important; border-radius: 4px; padding: 4px 6px; font-size: 0.75rem; font-weight: 700; cursor: default; }
+        .fc-button-primary { background-color: #1e293b !important; border: none !important; border-radius: 8px !important; text-transform: capitalize; }
+        .fc-toolbar-title { font-size: 1.4rem !important; font-weight: 800; color: #0f172a; text-transform: capitalize; }
+    </style>
 </head>
-
-<body>
-<div class="container">
-    <div class="main-box">
-        <div class="header-title">
-            <h5 class="text-muted">Sistema do Condomínio</h5>
-            <h1>CONDOMÍNIO ESTRELA</h1>
-            <a href="{% url 'login' %}" class="btn btn-sm btn-danger mt-2">Sair</a>
+<body style="background-color: #f4f6f9;">
+    
+    {% if messages %}
+        <div class="position-fixed top-0 start-50 translate-middle-x mt-5" style="z-index: 9999; width: 90%; max-width: 500px;">
+            {% for message in messages %}
+                <div class="alert {% if message.tags == 'error' %}alert-danger fw-bold{% else %}alert-{{ message.tags }}{% endif %} text-center py-3 shadow-lg alert-dismissible fade show" role="alert" style="font-size: 0.95rem;">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            {% endfor %}
         </div>
+    {% endif %}
 
-        <div class="text-center mb-5">
-            <h2>Olá, Carla</h2>
+    <nav class="navbar navbar-expand-lg mb-5 shadow-sm" style="background-color: #1a2a3a; padding: 15px 0;">
+        <div class="container">
+            <a class="navbar-brand text-white fw-bold d-flex align-items-center" href="{% url 'login' %}">
+                <img src="{% static 'img/logoCE.png' %}" width="40" class="me-2" alt="Logo">
+                Condominio Estrela
+            </a>
+            <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navbarPrincipal">
+                <span class="navbar-toggler-icon" style="filter: invert(1);"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarPrincipal">
+                <ul class="navbar-nav mx-auto">
+                    <li class="nav-item"><a class="nav-link text-light px-3" href="{% url 'login' %}">Painel de Reservas</a></li>
+                </ul>
+                <div class="dropdown ms-auto mt-3 mt-lg-0">
+                    <button class="btn rounded-circle dropdown-toggle text-white fw-bold" type="button" id="perfilMenu" data-bs-toggle="dropdown" aria-expanded="false" style="background-color: #066E8B; width: 42px; height: 42px; border: none;">
+                        {{ user.first_name|make_list|first|upper }}
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-end shadow border-0" aria-labelledby="perfilMenu" style="border-radius: 10px;">
+                        <li><a class="dropdown-item py-2" href="{% url 'perfil' %}">Meu Perfil</a></li>
+                        <li><hr class="dropdown-divider m-0"></li>
+                        <li><a class="dropdown-item py-2 text-danger fw-bold" href="{% url 'logout' %}">Sair</a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container" style="max-width: 1000px;"> 
+
+        <div class="mb-4">
+            <h2 class="fw-bold mb-1" style="color: #1e293b;">Ola, {{ user.first_name }}</h2>
             <p class="text-muted">O que vamos reservar hoje?</p>
         </div>
 
-        <div class="row g-4 mb-5">
-            <div class="col-md-6">
-                <div class="card shadow-sm card-area">
-                    <div class="card-body">
-                        <h5 class="card-title">Churrasqueira Gourmet</h5>
-                        <p class="text-muted">Disponível para até 20 pessoas</p>
-                        <button class="btn btn-primary w-100">Solicitar Reserva</button>
-                    </div>
-                </div>
-            </div>
-
-            <div class="col-md-6">
-                <div class="card shadow-sm card-area">
-                    <div class="card-body">
-                        <h5 class="card-title">Salão de Festas</h5>
-                        <p class="text-muted">Espaço amplo com ar-condicionado</p>
-                        <button class="btn btn-primary w-100">Solicitar Reserva</button>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="card shadow-sm">
-            <div class="card-header">
-                <strong>Minhas Solicitações</strong>
-            </div>
+        <div class="card border-0 shadow-sm rounded-4 mb-5">
             <div class="card-body p-0">
-                <table class="table table-hover mb-0">
-                    <thead class="table-light">
-                        <tr>
-                            <th>Área</th>
-                            <th>Data</th>
-                            <th>Status</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td>Churrasqueira</td>
-                            <td>20/03/2026</td>
-                            <td><span class="badge bg-success">Aprovada</span></td>
-                        </tr>
-                        <tr>
-                            <td>Piscina (Raia 1)</td>
-                            <td>15/03/2026</td>
-                            <td><span class="badge bg-warning text-dark">Pendente</span></td>
-                        </tr>
-                    </tbody>
-                </table>
+                <div class="p-4 border-bottom">
+                    <h5 class="card-title fw-bold mb-0" style="color: #1e293b;">Minhas Reservas</h5>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-custom mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Area</th>
+                                <th>Data</th>
+                                <th>Horario</th>
+                                <th>Prazo Limite</th>
+                                <th class="text-center">Açoes</th> 
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for reserva in minhas_reservas %}
+                            <tr>
+                                <td class="fw-medium">{{ reserva.areaComum.nome }}</td>
+                                <td>{{ reserva.data_formatada }}</td>
+                                <td class="text-muted">{{ reserva.horarioInicio }} - {{ reserva.horarioFim }}</td>
+                                <td>
+                                    <span class="badge bg-light text-secondary border">
+                                        Até {{ reserva.areaComum.prazoCancelamentoDias }} dias antes
+                                    </span>
+                                </td>
+                                <td class="text-center"> 
+                                    
+                                    {% if not reserva.pago or user.is_staff or user.is_superuser or reserva.pode_editar_cancelar %}
+                                        
+                                        <button type="button" class="btn btn-sm btn-outline-primary fw-bold me-1" data-bs-toggle="modal" data-bs-target="#modalEditar{{ reserva.id }}">Editar</button>
+                                        <button type="button" class="btn btn-sm btn-outline-danger fw-bold" data-bs-toggle="modal" data-bs-target="#modalConfirmarCancelar{{ reserva.id }}">Cancelar</button>
+
+                                    {% else %}
+                                        
+                                        <button type="button" class="btn btn-sm btn-light text-muted fw-bold me-1" disabled style="cursor: not-allowed;" title="Edição bloqueada após o prazo para reservas pagas.">Editar</button>
+                                        <button type="button" class="btn btn-sm btn-danger fw-bold" data-bs-toggle="modal" data-bs-target="#modalMulta{{ reserva.id }}">
+                                            Cancelar c/ Multa
+                                        </button>
+
+                                    {% endif %}
+
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="5" class="text-center py-4 text-muted">Voce ainda nao possui reservas.</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
+
+        {% for reserva in minhas_reservas %}
+        {% if reserva.pode_editar_cancelar %}
+        <div class="modal fade" id="modalEditar{{ reserva.id }}" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content border-0 shadow-lg" style="border-radius: 16px;">
+                    <div class="modal-header bg-light border-bottom-0 pb-3 pt-4 px-4">
+                        <h5 class="modal-title fw-bold text-dark">Editar Reserva: {{ reserva.areaComum.nome }}</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body p-4 bg-white">
+                        <div id="erro-ajax-editar-{{ reserva.id }}"></div>
+                        <form id="formEditarAjax{{ reserva.id }}" action="{% url 'editar_reserva' reserva.id %}" method="POST" onsubmit="enviarEdicaoAJAX(event, {{ reserva.id }})">
+                            {% csrf_token %}
+                            <div class="mb-3">
+                                <label class="form-label fw-bold small">Data da Reserva</label>
+                                <input type="date" name="dataReserva" value="{{ reserva.dataReserva|date:'Y-m-d' }}" class="form-control bg-light border-0 shadow-sm" required>
+                            </div>
+                            <div class="row mb-4">
+                                <div class="col-6">
+                                    <label class="form-label fw-bold small">Inicio</label>
+                                    <input type="time" name="horarioInicio" value="{{ reserva.horarioInicio|time:'H:i' }}" class="form-control bg-light border-0 shadow-sm" required>
+                                </div>
+                                <div class="col-6">
+                                    <label class="form-label fw-bold small">Fim</label>
+                                    <input type="time" name="horarioFim" value="{{ reserva.horarioFim|time:'H:i' }}" class="form-control bg-light border-0 shadow-sm" required>
+                                </div>
+                            </div>
+                            <div class="d-grid gap-2">
+                                <button type="submit" class="btn btn-primary rounded-pill fw-bold" style="background-color: #066E8B; border: none;">Salvar Alteracoes</button>
+                                <button type="button" class="btn btn-light rounded-pill fw-bold" data-bs-dismiss="modal">Cancelar</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
         </div>
-</div>
+        {% endif %}
+        {% endfor %}
+
+        {% for reserva in minhas_reservas %}
+        {% if not reserva.pago or user.is_staff or user.is_superuser or reserva.pode_editar_cancelar %}
+        <div class="modal fade" id="modalConfirmarCancelar{{ reserva.id }}" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered" style="max-width: 500px;">
+                <div class="modal-content border-0 shadow-lg" style="border-radius: 12px; padding: 10px;">
+                    <div class="modal-header border-bottom-0 pb-2 pt-3 px-4 d-flex justify-content-between align-items-center">
+                        <h5 class="modal-title fw-bold text-dark" style="font-size: 1.25rem;">Confirmar Cancelamento</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body py-2 px-4 text-start">
+                        <p class="text-secondary" style="font-size: 0.95rem;">
+                            Tem certeza que deseja cancelar esta reserva?
+                        </p>
+                    </div>
+                    <div class="modal-footer border-top-0 pt-2 pb-3 px-4 d-flex justify-content-end gap-2">
+                        <button type="button" class="btn fw-semibold text-secondary bg-transparent border-0 px-3 py-2" data-bs-dismiss="modal" style="font-size: 0.95rem;">Cancelar</button>
+                        <form action="{% url 'cancelar_reserva' reserva.id %}" method="POST" class="d-inline">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-danger fw-semibold px-4 py-2" style="background-color: #dc3545; border: none; border-radius: 6px; font-size: 0.95rem;">
+                                Sim, cancelar
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+        {% endfor %}
+
+        {% for reserva in minhas_reservas %}
+        {% if reserva.pago and not reserva.pode_editar_cancelar %}
+        <div class="modal fade" id="modalMulta{{ reserva.id }}" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content border-0 shadow-lg" style="border-radius: 16px;">
+                    <div class="modal-header bg-danger text-white border-bottom-0 py-3 px-4" style="border-top-left-radius: 16px; border-top-right-radius: 16px;">
+                        <h5 class="modal-title fw-bold">Cancelamento com Multa</h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body p-4 bg-white text-start">
+                        <p class="text-dark fw-bold mb-2">Atenção, {{ user.first_name }}!</p>
+                        <p class="text-secondary small">O prazo de antecedência mínima de <strong>{{ reserva.areaComum.prazoCancelamentoDias }} dias</strong> para cancelar a reserva da área <strong>{{ reserva.areaComum.nome }}</strong> sem custos já expirou.</p>
+                        
+                        <div class="alert alert-warning border-0 small mb-0 mt-3" role="alert" style="background-color: #fffbeb; border-left: 4px solid #f59e0b !important; color: #b45309;">
+                            Ao confirmar, a data será liberada imediatamente para seus vizinhos no painel. Contudo, uma taxa administrativa de cancelamento tardio será lançada no boleto do seu apartamento.
+                        </div>
+                    </div>
+                    <div class="modal-footer bg-light border-top-0 py-3 px-4" style="border-bottom-left-radius: 16px; border-bottom-right-radius: 16px;">
+                        <button type="button" class="btn btn-sm btn-light rounded-pill fw-bold px-3" data-bs-dismiss="modal">Desistir</button>
+                        <form action="{% url 'cancelar_reserva' reserva.id %}" method="POST" class="d-inline">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-sm btn-danger rounded-pill fw-bold px-4">Confirmar e Liberar Área</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+        {% endfor %}
+
+        <h5 class="fw-bold mb-3" style="color: #1e293b;">Selecione a Area Disponivel</h5>
+        <div class="row g-4 mb-5">
+            {% for area in areas_disponiveis %}
+            <div class="col-md-6">
+                <div class="card border-0 shadow-sm rounded-4 h-100 p-2">
+                    <div class="card-body d-flex flex-column">
+                        <h5 class="card-title fw-bold" style="color: #1e293b;">{{ area.nome }}</h5>
+                        <p class="text-muted flex-grow-1 mb-4">Capacidade: Ate {{ area.capacidade }} pessoas<br>
+                        Reserva Maxima: {{ area.tempoDaReserva }} horas</p>
+                        <button type="button" class="btn btn-primary w-100 mt-auto rounded-pill fw-bold" style="background-color: #066E8B; border: none;" data-bs-toggle="modal" data-bs-target="#modalReserva{{ area.id }}">
+                            Fazer Reserva
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal fade" id="modalReserva{{ area.id }}" tabindex="-1" aria-hidden="true">
+                <div class="modal-dialog modal-xl modal-dialog-centered">
+                    <div class="modal-content border-0 shadow-lg" style="border-radius: 16px; overflow: hidden;">
+                        <div class="modal-header bg-light border-bottom-0 pb-3 pt-4 px-4 d-flex justify-content-between align-items-center">
+                            <h4 class="modal-title fw-bold text-dark mb-0">Reserva: {{ area.nome }}</h4>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+
+                        <div class="modal-body p-4 bg-white">
+                            <div class="row g-5">
+                                <div class="col-lg-7 border-end pe-lg-4">
+                                    <h6 class="fw-bold mb-3 text-muted small text-center text-uppercase">Arraste no calendario para selecionar o periodo</h6>
+                                    <div id="calendar{{ area.id }}" class="p-1" style="min-height: 400px;"></div>
+                                </div>
+
+                                <div class="col-lg-5">
+                                    <div class="p-4 rounded-4 h-100 d-flex flex-column" style="background-color: #f8fafc; border: 1px solid #e2e8f0;">
+                                        <div class="mb-4 d-flex justify-content-between align-items-center">
+                                            <div>
+                                                <h6 class="fw-bold mb-0 text-dark">Limite Permitido</h6>
+                                                <small class="text-muted">Ate <strong>{{ area.tempoDaReserva }} horas</strong> por vez.</small>
+                                            </div>
+                                        </div>
+                                        <hr class="text-muted mb-4 opacity-25">
+                                        <div class="mb-4">
+                                            <span class="d-block text-muted small fw-bold text-uppercase mb-2">Periodo Selecionado</span>
+                                            <div class="bg-white p-3 rounded-3 shadow-sm border border-light">
+                                                <span id="display_data_{{ area.id }}" class="fs-6 text-dark fw-bold text-center d-block">--/--/----</span>
+                                            </div>
+                                        </div>
+
+                                        <div id="resumo_dia_{{ area.id }}"></div>
+                                        <div id="erro-ajax-{{ area.id }}"></div>
+
+                                        <form id="formAjax{{ area.id }}" autocomplete="off" action="{% url 'solicitar_reserva' area.id %}" method="POST" onsubmit="enviarReservaAJAX(event, {{ area.id }})" class="mt-auto">
+                                            {% csrf_token %}
+                                            <input type="hidden" name="dataReserva" id="hidden_data_{{ area.id }}">
+                                            <input type="hidden" name="dataFim_temp" id="hidden_data_fim_{{ area.id }}">
+                                            <div class="row mb-4">
+                                                <div class="col-6">
+                                                    <label class="form-label fw-bold text-dark small">A partir das:</label>
+                                                    <input type="time" name="horarioInicio" id="input_inicio_{{ area.id }}" class="form-control form-control-lg bg-white shadow-sm border-0" required>
+                                                </div>
+                                                <div class="col-6">
+                                                    <label class="form-label fw-bold text-dark small">Ate as:</label>
+                                                    <input type="time" name="horarioFim" id="input_fim_{{ area.id }}" class="form-control form-control-lg bg-white shadow-sm border-0" required>
+                                                </div>
+                                            </div>
+                                            <div class="d-grid gap-2 mt-4">
+                                                <button type="submit" id="btn_submit_{{ area.id }}" class="btn btn-primary btn-lg rounded-pill fw-bold" style="background-color: #066E8B; border: none;" disabled>Confirmar Reserva</button>
+                                                <button type="button" class="btn btn-light rounded-pill fw-bold" data-bs-dismiss="modal">Cancelar</button>
+                                            </div>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% empty %}
+            <div class="col-12 text-center text-muted py-5">
+                <h4>Nenhuma area disponivel no momento.</h4>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const modais = document.querySelectorAll('.modal');
+            modais.forEach(modal => {
+                if (modal.id.startsWith('modalEditar') || modal.id.startsWith('modalConfirmarCancelar')) return;
+                
+                modal.addEventListener('shown.bs.modal', function () {
+                    const areaId = this.id.replace('modalReserva', '');
+                    const calendarEl = document.getElementById('calendar' + areaId);
+                    
+                    document.getElementById('input_inicio_' + areaId).value = '';
+                    document.getElementById('input_fim_' + areaId).value = '';
+                    document.getElementById('hidden_data_' + areaId).value = '';
+                    document.getElementById('hidden_data_fim_' + areaId).value = '';
+
+                    if (window['calendario_' + areaId]) {
+                        window['calendario_' + areaId].destroy();
+                    }
+                    
+                    const calendar = new FullCalendar.Calendar(calendarEl, {
+                        initialView: 'dayGridMonth',
+                        locale: 'pt-br',
+                        height: 'auto',
+                        selectable: true,
+                        unselectAuto: false,
+                        headerToolbar: { left: 'prev', right: 'next', center: 'title' },
+                        
+                        events: {
+                            url: '/api/ocupacao/' + areaId + '/',
+                            extraParams: function() {
+                                return { v: new Date().getTime() };
+                            },
+                            failure: function() {
+                                alert('Erro de comunicacao ao buscar os horarios ocupados.');
+                            }
+                        },
+                        
+                        select: function(info) {
+                            const dataClicada = new Date(info.startStr + 'T00:00:00');
+                            const hoje = new Date();
+                            hoje.setHours(0,0,0,0);
+
+                            if (dataClicada < hoje) {
+                                calendar.unselect();
+                                return;
+                            }
+                            
+                            const endDate = new Date(info.endStr + 'T00:00:00');
+                            endDate.setDate(endDate.getDate() - 1); 
+
+                            const startStrFormat = info.start.toLocaleDateString('pt-BR', { timeZone: 'UTC' });
+                            const endStrFormat = endDate.toLocaleDateString('pt-BR', { timeZone: 'UTC' });
+
+                            if (startStrFormat === endStrFormat) {
+                                document.getElementById('display_data_' + areaId).innerText = startStrFormat;
+                            } else {
+                                document.getElementById('display_data_' + areaId).innerHTML = `${startStrFormat} <br><small class="text-muted fw-normal">ate</small><br> ${endStrFormat}`;
+                            }
+
+                            const resumoBox = document.getElementById('resumo_dia_' + areaId);
+                            resumoBox.innerHTML = `<div class="text-center text-muted small py-2">Verificando horarios...</div>`;
+
+                            fetch('/api/ocupacao/' + areaId + '/?v=' + new Date().getTime(), {
+                                credentials: 'same-origin'
+                            })
+                            .then(r => {
+                                if (!r.ok) throw new Error('Status ' + r.status);
+                                return r.json();
+                            })
+                            .then(eventos => {
+                                const diaClicado = info.startStr.substring(0, 10);
+
+                                const eventosDoDia = eventos.filter(e => {
+                                    const evStart = e.start.substring(0, 10);
+                                    const evEnd = e.end ? e.end.substring(0, 10) : evStart;
+                                    return evStart <= diaClicado && evEnd >= diaClicado;
+                                }).sort((a, b) => a.start.localeCompare(b.start));
+
+                                if (eventosDoDia.length === 0) {
+                                    resumoBox.innerHTML = `
+                                        <div class="alert alert-success py-2 px-3 small shadow-sm text-center mb-4" style="border-radius: 8px;">
+                                            <strong class="d-block mb-1 text-success">Dia 100% Livre</strong>
+                                            Pode escolher qualquer horario.
+                                        </div>`;
+                                } else {
+                                    let listaHorarios = eventosDoDia.map(e => `<span class="badge bg-danger p-2 me-1 mb-1 fw-bold">${e.title}</span>`).join('');
+                                    resumoBox.innerHTML = `
+                                        <div class="alert alert-warning py-2 px-3 small shadow-sm text-center mb-4" style="border-radius: 8px; background-color: #fffbeb; border: 1px solid #fde68a;">
+                                            <strong class="d-block mb-2 text-warning-emphasis">Atencao! Horarios Indisponiveis:</strong>
+                                            ${listaHorarios}
+                                        </div>`;
+                                }
+                            })
+                            .catch(err => {
+                                resumoBox.innerHTML = `<div class="alert alert-danger small text-center mb-4">Erro ao verificar horarios disponiveis.</div>`;
+                            });
+
+                            document.getElementById('hidden_data_' + areaId).value = info.startStr;
+                            
+                            const year = endDate.getUTCFullYear();
+                            const month = String(endDate.getUTCMonth() + 1).padStart(2, '0');
+                            const day = String(endDate.getUTCDate()).padStart(2, '0');
+                            document.getElementById('hidden_data_fim_' + areaId).value = `${year}-${month}-${day}`;
+
+                            document.getElementById('btn_submit_' + areaId).disabled = false;
+                            document.getElementById('erro-ajax-' + areaId).innerHTML = '';
+                        }
+                    });
+                    calendar.render();
+                    window['calendario_' + areaId] = calendar; 
+                });
+
+                modal.addEventListener('hidden.bs.modal', function () {
+                    if (this.id.startsWith('modalEditar') || this.id.startsWith('modalConfirmarCancelar')) return;
+                    const areaId = this.id.replace('modalReserva', '');
+                    const form = document.getElementById('formAjax' + areaId);
+                    if(form) {
+                        form.reset();
+                        document.getElementById('input_inicio_' + areaId).value = '';
+                        document.getElementById('input_fim_' + areaId).value = '';
+                        document.getElementById('hidden_data_' + areaId).value = '';
+                        document.getElementById('hidden_data_fim_' + areaId).value = '';
+                    }
+                    
+                    document.getElementById('btn_submit_' + areaId).disabled = true;
+                    document.getElementById('display_data_' + areaId).innerText = '--/--/----';
+                    
+                    const erroBox = document.getElementById('erro-ajax-' + areaId);
+                    if(erroBox) erroBox.innerHTML = '';
+
+                    const resumoBox = document.getElementById('resumo_dia_' + areaId);
+                    if(resumoBox) resumoBox.innerHTML = '';
+                });
+            });
+        });
+
+        function enviarReservaAJAX(event, areaId) {
+            event.preventDefault();
+            const form = document.getElementById('formAjax' + areaId);
+            const url = form.getAttribute('action');
+            const erroContainer = document.getElementById('erro-ajax-' + areaId);
+            const formData = new FormData(form);
+
+            fetch(url, {
+                method: 'POST',
+                body: formData,
+                headers: { 'X-Requested-With': 'XMLHttpRequest' }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.sucesso) {
+                    window.location.reload();
+                } else {
+                    erroContainer.innerHTML = '';
+                    data.erros.forEach(erro => {
+                        erroContainer.innerHTML += `
+                            <div class="alert alert-danger alert-dismissible fade show text-center py-3 shadow-sm fw-bold" role="alert" style="font-size: 0.95rem;">
+                                ${erro}
+                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                            </div>
+                        `;
+                    });
+                }
+            })
+            .catch(error => {});
+        }
+
+        function enviarEdicaoAJAX(event, reservaId) {
+            event.preventDefault();
+            const form = document.getElementById('formEditarAjax' + reservaId);
+            const url = form.getAttribute('action');
+            const erroContainer = document.getElementById('erro-ajax-editar-' + reservaId);
+            const formData = new FormData(form);
+
+            fetch(url, {
+                method: 'POST',
+                body: formData,
+                headers: { 'X-Requested-With': 'XMLHttpRequest' }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.sucesso) {
+                    window.location.reload();
+                } else {
+                    erroContainer.innerHTML = '';
+                    data.erros.forEach(erro => {
+                        erroContainer.innerHTML += `
+                            <div class="alert alert-danger alert-dismissible fade show text-center py-3 shadow-sm fw-bold" role="alert" style="font-size: 0.95rem;">
+                                ${erro}
+                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                            </div>
+                        `;
+                    });
+                }
+            })
+            .catch(error => {});
+        }
+    </script>
 </body>
 </html>

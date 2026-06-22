@@ -1,0 +1,141 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="{% static 'css/estiloSindico.css' %}" rel="stylesheet">
+    <title>Condomínio Estrela - Controle Financeiro</title>
+</head>
+<body style="background-color: #f4f6f9;">
+
+    <nav class="navbar navbar-expand-lg mb-5 shadow-sm" style="background-color: #1a2a3a; padding: 15px 0;">
+        <div class="container">
+            <a class="navbar-brand text-white fw-bold d-flex align-items-center" href="{% url 'login' %}">
+                <img src="{% static 'img/logoCE.png' %}" width="40" class="me-2" alt="Logo">
+                Condomínio Estrela
+            </a>
+            <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navbarPrincipal">
+                <span class="navbar-toggler-icon" style="filter: invert(1);"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarPrincipal">
+                <ul class="navbar-nav mx-auto">
+                    {% if user.is_superuser or user.sindico or user.administrador %}
+                        <li class="nav-item"><a class="nav-link text-light px-3" href="{% url 'login' %}">Painel</a></li>
+                        <li class="nav-item"><a class="nav-link text-light px-3" href="{% url 'listar_locais' %}">Áreas</a></li>
+                        <li class="nav-item"><a class="nav-link text-light px-3" href="{% url 'listar_reservas' %}">Reservas</a></li>
+                        <li class="nav-item"><a class="nav-link text-warning fw-bold px-3" href="{% url 'listar_usuarios' %}">Aprovações</a></li>
+                    {% else %}
+                        <li class="nav-item"><a class="nav-link text-light px-3" href="{% url 'login' %}">Painel de Reservas</a></li>
+                    {% endif %}
+                </ul>
+                <div class="dropdown ms-auto mt-3 mt-lg-0">
+                    <button class="btn rounded-circle dropdown-toggle text-white fw-bold" type="button" id="perfilMenu" data-bs-toggle="dropdown" aria-expanded="false" style="background-color: #066E8B; width: 42px; height: 42px; border: none;">
+                        {{ user.first_name|make_list|first|upper }}
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-end shadow border-0" aria-labelledby="perfilMenu" style="border-radius: 10px;">
+                        <li><a class="dropdown-item py-2" href="{% url 'perfil' %}">Meu Perfil</a></li>
+                        <li><hr class="dropdown-divider m-0"></li>
+                        <li><a class="dropdown-item py-2 text-danger fw-bold" href="{% url 'logout' %}">Sair</a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container" style="max-width: 1100px;">
+        
+        <div class="mb-4">
+            <h2 class="fw-bold mb-1" style="color: #1e293b;">Controle Financeiro de Reservas</h2>
+            <p class="text-muted">Gerencie pagamentos pendentes e cobranças de multas por cancelamento tardio.</p>
+        </div>
+
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert alert-{{ message.tags }} alert-dismissible fade show shadow-sm border-0" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            {% endfor %}
+        {% endif %}
+
+        <div class="card shadow-sm border-0 rounded-4 overflow-hidden mb-5">
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="table-light">
+                            <tr style="border-bottom: 2px solid #e2e8f0;">
+                                <th class="ps-4 py-3 text-secondary fw-semibold">Morador</th>
+                                <th class="py-3 text-secondary fw-semibold">Área Comum</th>
+                                <th class="py-3 text-secondary fw-semibold">Data</th>
+                                <th class="py-3 text-secondary fw-semibold">Horário</th>
+                                <th class="py-3 text-secondary fw-semibold">Motivo da Cobrança</th>
+                                <th class="py-3 text-center text-secondary fw-semibold">Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for reserva in reservas_pendentes %}
+                            <tr style="border-bottom: 1px solid #f1f5f9;">
+                                <td class="ps-4">
+                                    <span class="fw-bold d-block text-dark">{{ reserva.morador.first_name }}</span>
+                                    <small class="text-muted">{{ reserva.morador.email }}</small>
+                                </td>
+                                
+                                <td>
+                                    <span class="badge bg-secondary bg-opacity-10 text-secondary border border-secondary border-opacity-25 px-2.5 py-1.5">
+                                        {{ reserva.areaComum.nome }}
+                                    </span>
+                                </td>
+                                
+                                <td>{{ reserva.data_formatada }}</td>
+                                
+                                <td>{{ reserva.horarioInicio|time:"H:i" }} às {{ reserva.horarioFim|time:"H:i" }}</td>
+                                
+                                <td>
+                                    {% if reserva.status == 'Cancelado_Multa' %}
+                                        <span class="badge bg-danger bg-opacity-10 text-danger border border-danger border-opacity-25 px-2.5 py-1.5">
+                                            Multa (Cancelamento Tardio)
+                                        </span>
+                                    {% else %}
+                                        <span class="badge bg-warning bg-opacity-10 text-warning border border-warning border-opacity-25 px-2.5 py-1.5">
+                                            Taxa de Uso Pendente
+                                        </span>
+                                    {% endif %}
+                                </td>
+                                
+                                <td class="text-center pe-4">
+                                    <form action="{% url 'alternar_pagamento_reserva' reserva.id %}" method="POST" class="d-inline">
+                                        {% csrf_token %}
+                                        {% if reserva.pago %}
+                                            <button type="submit" class="btn btn-sm btn-outline-danger px-3 rounded-pill">
+                                                Estornar Pagamento
+                                            </button>
+                                        {% else %}
+                                            <button type="submit" class="btn btn-sm btn-success px-4 rounded-pill shadow-sm fw-medium">
+                                                Confirmar Pagamento
+                                            </button>
+                                        {% endif %}
+                                    </form>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="6" class="text-center py-5">
+                                    <div class="text-success mb-3">
+                                        <i class="bi bi-check2-circle fs-1"></i>
+                                    </div>
+                                    <h5 class="fw-bold text-dark">Tudo em dia por aqui!</h5>
+                                    <p class="mb-0 text-muted">Não há nenhuma taxa pendente ou multa activa no momento.</p>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div> <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

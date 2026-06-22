@@ -1,3 +1,9 @@
 from django.contrib import admin
+from .models import Usuario, Morador, Administrador, Sindico, AreaComum, Reserva
 
-# Register your models here.
+admin.site.register(Usuario)
+admin.site.register(Morador)
+admin.site.register(Administrador)
+admin.site.register(Sindico)
+admin.site.register(AreaComum)
+admin.site.register(Reserva)
